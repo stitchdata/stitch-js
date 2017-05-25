@@ -1,6 +1,6 @@
 # Stitch JS Client
 
-JavaScript client for integrating with api.stitchdata.com
+JavaScript client for integrating with `app.stitchdata.com`.
 
 Supported features:
 

@@ -58,7 +58,7 @@ npm run build && npm run minify
 To use a host other than `https://app.stitchdata.com`, set the `STITCH_JS_HOST` variable in your environment before building:
 
 ```
-export STITCH_JS_ENV="http://stitch.localhost.dev:1234"
+export STITCH_JS_HOST="http://stitch.localhost.dev:1234"
 npm run build
 ```
 

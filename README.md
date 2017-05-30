@@ -22,17 +22,31 @@ bower install --save stitch-client
 yarn add stitch-client
 ```
 
-Or, reference `dist/stitch-client.js.min` from a script tag:
+Or, reference `dist/stitch-client.min.js` from a script tag:
 
 ```html
 <!-- local file -->
-<script src="stitch-client.min"></script>
+<script src="stitch-client.min.js"></script>
 ```
 
 ## Example usage
 
 ```javascript
 window.Stitch.addIntegration("adroll", (result) => {
+  if (result) {
+    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  } else {
+    console.log("Integration not created.");
+  }
+});
+```
+
+Or, if you're using ES6 modules:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.addIntegration("adroll", (result) => {
   if (result) {
     console.log(`Integration created, type=${result.type}, id=${result.id}`);
   } else {
@@ -62,4 +76,4 @@ export STITCH_JS_HOST="http://stitch.localhost.dev:1234"
 npm run build
 ```
 
-You can also enable logging with `STITCH_JS_ENV_VERBOSE_OUTPUT=true`.
+You can also enable logging with `STITCH_JS_VERBOSE_OUTPUT=true`.

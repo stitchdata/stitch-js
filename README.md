@@ -8,21 +8,7 @@ Supported features:
 
 ## Installation
 
-Install using one of the standard JavaScript package managers (*TODO*: add to registry):
-
-```shell
-npm i --save stitch-client
-
-# or
-
-bower install --save stitch-client
-
-# or
-
-yarn add stitch-client
-```
-
-Or, reference `dist/stitch-client.min.js` from a script tag:
+Reference `dist/stitch-client.min.js` from a script tag:
 
 ```html
 <!-- local file -->

@@ -3,5 +3,5 @@ const utils = require("./utils.js");
 
 module.exports = {
   Client,
-  addIntegration: utils.addIntegration
+  addSourceIntegration: utils.addSourceIntegration
 };

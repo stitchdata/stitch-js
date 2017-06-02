@@ -21,7 +21,9 @@ export default class StitchClient {
   }
 
   subscribe(callback) {
-    const unlisten = () => { this._subscribers = this._subscribers.filter((_callback) => callback !== callback)}
+    const unlisten = () => {
+      this._subscribers = this._subscribers.filter((_callback) => callback !== callback)
+    };
     this._subscribers.push(callback);
     return unlisten;
   }
@@ -32,16 +34,35 @@ export default class StitchClient {
     }
   }
 
+  // The child window sends an event when closed, but if the window is closed
+  // from outside the Stitch app (during the OAuth flow, for example), this
+  // event won't be sent. So, check the window status every second.
+  _pollForChildWindowClosed() {
+    window.setTimeout(() => {
+      if (this._childWindow) {
+        if (this._childWindow.closed) {
+          this._windowClosed();
+        } else {
+          this._pollForChildWindowClosed();
+        }
+      }
+    }, 1000);
+  }
+
+  _windowClosed() {
+    log("event: closed")
+    this._childWindow = null;
+    this._initialized = false;
+    this._emit({type: "closed"});
+  }
+
   _onMessage(event) {
     if (event.type === EVENT_TYPES.BOOTSTRAP) {
       log("event: initialized");
       this._initialized = true;
       this._sendContext();
     } else if (event.type === "closed") {
-      log("event: closed")
-      this._childWindow = null;
-      this._initialized = false;
-      this._emit(event);
+      this._windowClosed();
     } else if (KNOWN_MESSAGE_TYPES.has(event.type)) {
       log("event", event);
       this._emit(event);
@@ -74,6 +95,7 @@ export default class StitchClient {
     }
     this._initialized = false;
     this._childWindow = window.open(ROOT);
+    this._pollForChildWindowClosed();
   }
 
   close() {

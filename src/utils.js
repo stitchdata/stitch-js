@@ -1,15 +1,15 @@
 import Client from "./Client.js";
 import EVENT_TYPES from "./EVENT_TYPES.js";
 
-export function addIntegration(type, callback) {
+export function addSourceIntegration(type, callback) {
   const client = new Client();
-  let newIntegration = null;
-  client.subscribe((event) => {
+  const unlisten = client.subscribe((event) => {
     if (event.type === EVENT_TYPES.CONNECTION_CREATED && event.data.type === type)  {
-      newIntegration = event.data;
+      unlisten();
+      callback(event.data);
     } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
       client.close();
-      callback(newIntegration);
+      callback();
     }
   });
   client.initialize({

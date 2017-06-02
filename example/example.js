@@ -1,15 +1,17 @@
-let submitButton, statusLabel;
+let submitButton, statusList, integrationDetails;
 
 function buttonClicked() {
 
   submitButton.disabled = true;
-  statusLabel.textContent = "Waiting...";
-  window.Stitch.addIntegration("adroll", (result) => {
+  statusList.className = "status status--in-progress";
+  integrationDetails.textContent = "";
+  window.Stitch.addSourceIntegration("platform.hubspot", function(result) {
     submitButton.disabled = false;
     if (result) {
-      statusLabel.textContent = `Integration created, type=${result.type}, id=${result.id}`;
+      statusList.className = "status status--success";
+      integrationDetails.textContent = "(id: " + result.id + ")";
     } else {
-      statusLabel.textContent = "Integration not created.";
+      statusList.className = "status status--failed";
     }
   });
 
@@ -17,6 +19,7 @@ function buttonClicked() {
 
 document.addEventListener("DOMContentLoaded", () => {
   submitButton = document.getElementById("submit");
-  statusLabel = document.getElementById("status");
+  statusList = document.querySelector(".status");
+  integrationDetails = document.getElementById("integration-details");
   submitButton.addEventListener("click", buttonClicked);
 });

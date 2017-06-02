@@ -81,6 +81,34 @@ var StitchClient = function () {
         }
       }
     }
+
+    // The child window sends an event when closed, but if the window is closed
+    // from outside the Stitch app (during the OAuth flow, for example), this
+    // event won't be sent. So, check the window status every second.
+
+  }, {
+    key: "_pollForChildWindowClosed",
+    value: function _pollForChildWindowClosed() {
+      var _this3 = this;
+
+      window.setTimeout(function () {
+        if (_this3._childWindow) {
+          if (_this3._childWindow.closed) {
+            _this3._windowClosed();
+          } else {
+            _this3._pollForChildWindowClosed();
+          }
+        }
+      }, 1000);
+    }
+  }, {
+    key: "_windowClosed",
+    value: function _windowClosed() {
+      log("event: closed");
+      this._childWindow = null;
+      this._initialized = false;
+      this._emit({ type: "closed" });
+    }
   }, {
     key: "_onMessage",
     value: function _onMessage(event) {
@@ -89,10 +117,7 @@ var StitchClient = function () {
         this._initialized = true;
         this._sendContext();
       } else if (event.type === "closed") {
-        log("event: closed");
-        this._childWindow = null;
-        this._initialized = false;
-        this._emit(event);
+        this._windowClosed();
       } else if (KNOWN_MESSAGE_TYPES.has(event.type)) {
         log("event", event);
         this._emit(event);
@@ -130,6 +155,7 @@ var StitchClient = function () {
       }
       this._initialized = false;
       this._childWindow = window.open(ROOT);
+      this._pollForChildWindowClosed();
     }
   }, {
     key: "close",
@@ -168,7 +194,7 @@ var utils = require("./utils.js");
 
 module.exports = {
   Client: Client,
-  addIntegration: utils.addIntegration
+  addSourceIntegration: utils.addSourceIntegration
 };
 
 },{"./Client.js":1,"./utils.js":4}],4:[function(require,module,exports){
@@ -177,7 +203,7 @@ module.exports = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addIntegration = addIntegration;
+exports.addSourceIntegration = addSourceIntegration;
 
 var _Client = require("./Client.js");
 
@@ -189,15 +215,15 @@ var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function addIntegration(type, callback) {
+function addSourceIntegration(type, callback) {
   var client = new _Client2.default();
-  var newIntegration = null;
-  client.subscribe(function (event) {
+  var unlisten = client.subscribe(function (event) {
     if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && event.data.type === type) {
-      newIntegration = event.data;
+      unlisten();
+      callback(event.data);
     } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
       client.close();
-      callback(newIntegration);
+      callback();
     }
   });
   client.initialize({

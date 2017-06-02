@@ -18,7 +18,7 @@ Reference `dist/stitch-client.min.js` from a script tag:
 ## Example usage
 
 ```javascript
-window.Stitch.addIntegration("adroll", (result) => {
+window.Stitch.addSourceIntegration("adroll", (result) => {
   if (result) {
     console.log(`Integration created, type=${result.type}, id=${result.id}`);
   } else {
@@ -32,13 +32,23 @@ Or, if you're using ES6 modules:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.addIntegration("adroll", (result) => {
+Stitch.addSourceIntegration("adroll", (result) => {
   if (result) {
     console.log(`Integration created, type=${result.type}, id=${result.id}`);
   } else {
     console.log("Integration not created.");
   }
 });
+```
+
+This repository also includes a complete (but very basic) example application in the `example/` directory.
+
+You can run `npm install` from the root directory of the repo to install `http-server`, and then start a server to run this
+
+```shell
+stitch-js-client$ npm install # you'll only have to do this once
+stitch-js-client$ http-server
+# The site should now be available at http://127.0.0.1:8080/example
 ```
 
 ## Building

@@ -1,10 +1,97 @@
 <!doctype html>
 <html>
   <head>
+    <title>Stitch JS Client Example</title>
+    <link rel="stylesheet" href="https://code.cdn.mozilla.net/fonts/fira.css">
+    <style type="text/css">
+      html {
+        font-family: "Fira Sans", sans-serif;
+        font-size: 20px;
+      }
+      body {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      body > * + * {
+        margin-top: 2em;
+      }
+      button {
+        background: #ffcc00;
+        border: none;
+        color: #1e2023;
+        cursor: pointer;
+        font-family: "Fira Sans", sans-serif;
+        font-size: 0.75em;
+        padding: 1em 2em;
+      }
+      button:hover {
+        background-color: #1e2023;
+        color: white;
+      }
+      button:disabled,
+      button:hover:disabled {
+        background-color: #E2E2E2;
+        color: #999999;
+        cursor: default;
+      }
+      .status {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+      .status .status__item {
+        opacity: 0.20;
+        -webkit-filter: grayscale(1);
+        filter: grayscale(1);
+        padding-left: 1em;
+      }
+      .status .status__item-icon {
+        position: relative;
+        left: -0.5em;
+      }
+      .status.status--failed .status__item--failed {
+        color: #ED4040;
+      }
+      .status.status--success .status__item--success {
+        color: #66CC66;
+      }
+      .status.status--not-started .status__item--not-started,
+      .status.status--in-progress .status__item--in-progress,
+      .status.status--failed .status__item--failed,
+      .status.status--success .status__item--success {
+        font-weight: 600;
+        filter: none;
+        opacity: 1;
+      }
+    </style>
   </head>
   <body>
-    <button id="submit">Click me</button>
-    <p id="status">Not clicked</p>
+
+    <ul class="status status--not-started">
+      <li class="status__item status__item--not-started">
+        <span class="status__item-icon">⏲️</span>
+        Not Started
+      </li>
+      <li class="status__item status__item--in-progress">
+        <span class="status__item-icon">🏁</span>
+        Stitch app open...
+      </li>
+      <li class="status__item status__item--failed">
+        <span class="status__item-icon">🚫</span>
+        Integration not created
+      </li>
+      <li class="status__item status__item--success">
+        <span class="status__item-icon">✅</span>
+        Integration created successfully <span id="integration-details"></span>
+      </li>
+    </ul>
+
+    <button id="submit">Create a Hubspot Integration</button>
+
     <script src="../dist/stitch-client.min.js"></script>
     <script src="example.js"></script>
   </body>

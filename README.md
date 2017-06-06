@@ -41,6 +41,13 @@ Stitch.addSourceIntegration("adroll", (result) => {
 });
 ```
 
+The first argument to `addSourceIntegration` is a string that represents the source type.  The following types have been tested with Stitch.js:
+
+ - `platform.hubspot`
+ - `platform.marketo`
+ - `salesforce`
+ - `zendesk`
+
 This repository also includes a complete (but very basic) example application in the `example/` directory.
 
 You can run `npm install` from the root directory of the repo to install `http-server`, and then start a server to run this

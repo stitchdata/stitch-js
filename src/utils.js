@@ -3,13 +3,19 @@ import EVENT_TYPES from "./EVENT_TYPES.js";
 
 export function addSourceIntegration(type, callback) {
   const client = new Client();
-  const unlisten = client.subscribe((event) => {
+  let callbackInvoked = false;
+  client.subscribe((event) => {
     if (event.type === EVENT_TYPES.CONNECTION_CREATED && event.data.type === type)  {
-      unlisten();
-      callback(event.data);
+      if (!callbackInvoked) {
+        callback(event.data);
+        callbackInvoked = true;
+      }
     } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
       client.close();
-      callback();
+      if (!callbackInvoked) {
+        callback();
+        callbackInvoked = true;
+      }
     }
   });
   client.initialize({

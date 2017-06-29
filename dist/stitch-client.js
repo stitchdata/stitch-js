@@ -218,16 +218,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function addSourceIntegration(type, callback) {
   var client = new _Client2.default();
   var callbackInvoked = false;
+  var integration = void 0;
   client.subscribe(function (event) {
     if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && event.data.type === type) {
-      if (!callbackInvoked) {
-        callback(event.data);
-        callbackInvoked = true;
-      }
+      integration = event.data;
     } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
       client.close();
       if (!callbackInvoked) {
-        callback();
+        callback(integration);
         callbackInvoked = true;
       }
     }

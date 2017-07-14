@@ -4,7 +4,8 @@ const HOST = process.env.STITCH_JS_HOST || "https://app.stitchdata.com"
 const ROOT = `${HOST}/v2/js-client`;
 const log = process.env.STITCH_JS_VERBOSE_OUTPUT === "true" ? console.log : function(){};
 
-const KNOWN_MESSAGE_TYPES = new Set(Object.values(EVENT_TYPES));
+const KNOWN_MESSAGE_TYPES = Object.keys(EVENT_TYPES)
+  .map((key) => EVENT_TYPES[key]);
 
 export default class StitchClient {
 
@@ -63,7 +64,7 @@ export default class StitchClient {
       this._sendContext();
     } else if (event.type === "closed") {
       this._windowClosed();
-    } else if (KNOWN_MESSAGE_TYPES.has(event.type)) {
+    } else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
       log("event", event);
       this._emit(event);
     } else {

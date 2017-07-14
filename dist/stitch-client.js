@@ -19,7 +19,9 @@ var HOST = undefined || "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === "true" ? console.log : function () {};
 
-var KNOWN_MESSAGE_TYPES = new Set(Object.values(_EVENT_TYPES2.default));
+var KNOWN_MESSAGE_TYPES = Object.keys(_EVENT_TYPES2.default).map(function (key) {
+  return _EVENT_TYPES2.default[key];
+});
 
 var StitchClient = function () {
   function StitchClient() {
@@ -118,7 +120,7 @@ var StitchClient = function () {
         this._sendContext();
       } else if (event.type === "closed") {
         this._windowClosed();
-      } else if (KNOWN_MESSAGE_TYPES.has(event.type)) {
+      } else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
         log("event", event);
         this._emit(event);
       } else {

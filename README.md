@@ -48,7 +48,28 @@ The first argument to `addSourceIntegration` is a string that represents the sou
  - `salesforce`
  - `zendesk`
 
-This repository also includes a complete (but very basic) example application in the `example/` directory.
+The second argument is a function that will be called when the Stitch
+popup window closes.
+
+There is an optional third argument for default selections. If provided,
+this argument will be used to set default selections for the data
+structures to be replicated during the source integration setup. It should
+be an object of the form `{"table_name": true}`, for example the object:
+
+```javascript
+{
+  "campaigns": true
+}
+```
+
+Will pre-select the campaigns table for the `platform.hubspot`
+integration. If a table name is given that is not produced by the source
+integration, it is ignored. Values other than `true` are also ignored, and
+nesting of default selections is not currently supported - only top level
+tables can be provided.
+
+This repository also includes a complete (but very basic)
+example application in the `example/` directory.
 
 You can run `npm install` from the root directory of the repo to install `http-server`, and then start a server to run this
 

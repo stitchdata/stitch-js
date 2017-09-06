@@ -1,7 +1,7 @@
 import Client from "./Client.js";
 import EVENT_TYPES from "./EVENT_TYPES.js";
 
-export function addSourceIntegration(type, callback) {
+export function addSourceIntegration(type, callback, defaultSelections={}) {
   const client = new Client();
   let callbackInvoked = false;
   let integration;
@@ -19,6 +19,7 @@ export function addSourceIntegration(type, callback) {
   client.initialize({
     hideNav: true,
     preventIntegrationFormClose: true,
+    defaultSelections: defaultSelections,
     targetState: {
       name: "app.connections.create",
       params: {

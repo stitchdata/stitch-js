@@ -13,7 +13,7 @@ function buttonClicked() {
     } else {
       statusList.className = "status status--failed";
     }
-  });
+  }, {"campaigns": true});
 
 }
 

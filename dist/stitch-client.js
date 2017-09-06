@@ -218,6 +218,8 @@ var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function addSourceIntegration(type, callback) {
+  var defaultSelections = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
   var client = new _Client2.default();
   var callbackInvoked = false;
   var integration = void 0;
@@ -235,6 +237,7 @@ function addSourceIntegration(type, callback) {
   client.initialize({
     hideNav: true,
     preventIntegrationFormClose: true,
+    defaultSelections: defaultSelections,
     targetState: {
       name: "app.connections.create",
       params: {

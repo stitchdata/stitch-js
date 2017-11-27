@@ -1,13 +1,14 @@
 import Client from "./Client.js";
 import EVENT_TYPES from "./EVENT_TYPES.js";
 
-export function addSourceIntegration(type, callback, defaultSelections={}) {
+export function addSourceIntegration(type, callback, additionalState) {
   const client = new Client();
   let callbackInvoked = false;
   let integration;
   client.subscribe((event) => {
     if (event.type === EVENT_TYPES.CONNECTION_CREATED && event.data.type === type)  {
-      integration = event.data;
+        integration = event.data;
+        //CLOSED EVENTS should never get into this callback. see _onMessage in Client.js
     } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
       client.close();
       if (!callbackInvoked) {
@@ -16,15 +17,16 @@ export function addSourceIntegration(type, callback, defaultSelections={}) {
       }
     }
   });
-  client.initialize({
-    hideNav: true,
-    preventIntegrationFormClose: true,
-    defaultSelections: defaultSelections,
-    targetState: {
-      name: "app.connections.create",
-      params: {
-        route: type
-      }
-    }
+    client.initialize({
+        version: 2,
+        hideNav: true,
+        preventIntegrationFormClose: true,
+        additionalState : additionalState,
+        targetState: {
+            name: "app.connections.create",
+            params: {
+                route: type
+            },
+        }
   });
 }

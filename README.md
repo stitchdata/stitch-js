@@ -51,15 +51,18 @@ The first argument to `addSourceIntegration` is a string that represents the sou
 The second argument is a function that will be called when the Stitch
 popup window closes.
 
-There is an optional third argument for default selections. If provided,
-this argument will be used to set default selections for the data
+There is an optional third argument for additional state default selections.
+The following options are currently exported:
+1)`default_selections` If provided, this argument will be used to set default selections for the data
 structures to be replicated during the source integration setup. It should
 be an object of the form `{"table_name": true}`, for example the object:
 
+2)`ephemeral_token`   If provided, this token can be used as an automatic login mechanism for the user.
+
 ```javascript
-{
-  "campaigns": true
-}
+{'default_selections" : {"campaigns": true, "companies" : true},
+ 'ephemeral_token': 'some-ephemeral-token'}
+
 ```
 
 Will pre-select the campaigns table for the `platform.hubspot`

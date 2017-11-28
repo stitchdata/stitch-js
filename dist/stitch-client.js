@@ -118,7 +118,7 @@ var StitchClient = function () {
         log("event: initialized");
         this._initialized = true;
         this._sendContext();
-      } else if (event.type === "closed") {
+      } else if (event.type === _EVENT_TYPES2.default.CLOSED) {
         this._windowClosed();
       } else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
         log("event", event);
@@ -218,7 +218,7 @@ var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function addSourceIntegration(type, callback) {
-  var defaultSelections = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var additionalState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   var client = new _Client2.default();
   var callbackInvoked = false;
@@ -226,6 +226,7 @@ function addSourceIntegration(type, callback) {
   client.subscribe(function (event) {
     if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && event.data.type === type) {
       integration = event.data;
+      //CLOSED EVENTS should never get into this callback. see _onMessage in Client.js
     } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
       client.close();
       if (!callbackInvoked) {
@@ -235,9 +236,10 @@ function addSourceIntegration(type, callback) {
     }
   });
   client.initialize({
+    version: 2,
     hideNav: true,
     preventIntegrationFormClose: true,
-    defaultSelections: defaultSelections,
+    additionalState: additionalState,
     targetState: {
       name: "app.connections.create",
       params: {

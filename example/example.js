@@ -1,7 +1,6 @@
 let submitButton, statusList, integrationDetails;
 
-function buttonClicked() {
-
+function buttonClicked1() {
   submitButton.disabled = true;
   statusList.className = "status status--in-progress";
   integrationDetails.textContent = "";
@@ -14,12 +13,27 @@ function buttonClicked() {
       statusList.className = "status status--failed";
     }
   }, {"campaigns": true});
+}
 
+function buttonClicked2() {
+  submitButton.disabled = true;
+  statusList.className = "status status--in-progress";
+  integrationDetails.textContent = "";
+  window.Stitch.addSourceIntegration("platform.hubspot", function(result) {
+    submitButton.disabled = false;
+    if (result) {
+      statusList.className = "status status--success";
+      integrationDetails.textContent = "(id: " + result.id + ")";
+    } else {
+      statusList.className = "status status--failed";
+    }
+  }, {"default_selections" : {"campaigns": true, "companies" : true},
+      'ephemeral_token': 'some-ephemeral-token'});
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   submitButton = document.getElementById("submit");
   statusList = document.querySelector(".status");
   integrationDetails = document.getElementById("integration-details");
-  submitButton.addEventListener("click", buttonClicked);
+  submitButton.addEventListener("click", buttonClicked2);
 });

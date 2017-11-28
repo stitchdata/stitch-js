@@ -61,8 +61,8 @@ be an object of the form `{"table_name": true}`.
 1. `ephemeral_token`: if provided, this token will be used to automatically login the user.
 
 ```javascript
-{'default_selections" : {'campaigns': true, 'companies' : true},
- 'ephemeral_token': 'some-ephemeral-token'}
+{'default_selections" : {"campaigns": true, "companies": true},
+ "ephemeral_token": "some-ephemeral-token"}
 
 ```
 

@@ -28,7 +28,7 @@ function buttonClicked2() {
       statusList.className = "status status--failed";
     }
   }, {"default_selections" : {"campaigns": true, "companies" : true},
-      'ephemeral_token': 'f505dd7eef4cca69f3d3fdc76c35abd4cfec5b3dab9375fb40d3c128997d975d'});
+      'ephemeral_token': 'some-ephemeral-token'});
 }
 
 document.addEventListener("DOMContentLoaded", () => {

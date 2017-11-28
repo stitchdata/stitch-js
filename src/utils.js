@@ -1,7 +1,7 @@
 import Client from "./Client.js";
 import EVENT_TYPES from "./EVENT_TYPES.js";
 
-export function addSourceIntegration(type, callback, additionalState) {
+export function addSourceIntegration(type, callback, additionalState={}) {
   const client = new Client();
   let callbackInvoked = false;
   let integration;

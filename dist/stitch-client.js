@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var HOST = "http://app.localhost.dev:8080" || "https://app.stitchdata.com";
+var HOST = undefined || "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === "true" ? console.log : function () {};
 
@@ -217,7 +217,9 @@ var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function addSourceIntegration(type, callback, additionalState) {
+function addSourceIntegration(type, callback) {
+  var additionalState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
   var client = new _Client2.default();
   var callbackInvoked = false;
   var integration = void 0;

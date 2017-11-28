@@ -52,15 +52,16 @@ The second argument is a function that will be called when the Stitch
 popup window closes.
 
 There is an optional third argument for additional state default selections.
-The following options are currently exported:
-1)`default_selections` If provided, this argument will be used to set default selections for the data
-structures to be replicated during the source integration setup. It should
-be an object of the form `{"table_name": true}`, for example the object:
+The following options are currently supported:
 
-2)`ephemeral_token`   If provided, this token can be used as an automatic login mechanism for the user.
+1. `default_selections`: if provided, this property will be used to set default selections for the data
+structures to be replicated during the source integration setup. It should
+be an object of the form `{"table_name": true}`.
+
+1. `ephemeral_token`: if provided, this token will be used to automatically login the user.
 
 ```javascript
-{'default_selections" : {"campaigns": true, "companies" : true},
+{'default_selections" : {'campaigns': true, 'companies' : true},
  'ephemeral_token': 'some-ephemeral-token'}
 
 ```

@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var HOST = undefined || "https://app.stitchdata.com";
+var HOST = "http://app.stitchdata.test:8088" || "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === "true" ? console.log : function () {};
 
@@ -183,8 +183,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = Object.freeze({
   BOOTSTRAP: "bootstrap",
   CLOSED: "closed",
+  CONNECTION_AUTHORIZED: "connectionAuthorized",
   CONNECTION_CREATED: "connectionCreated",
   CONNECTION_UPDATED: "connectionUpdated",
+  ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
+  ERROR_LOADING_CONNECTION: "errorLoadingConnection",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
 
@@ -196,7 +199,9 @@ var utils = require("./utils.js");
 
 module.exports = {
   Client: Client,
-  addSourceIntegration: utils.addSourceIntegration
+  addSourceIntegration: utils.addSourceIntegration,
+  addSourceIntegrationNew: utils.addSourceIntegrationNew,
+  SOURCE_INTEGRATION_STEPS: utils.STEPS
 };
 
 },{"./Client.js":1,"./utils.js":4}],4:[function(require,module,exports){
@@ -205,7 +210,9 @@ module.exports = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.STEPS = undefined;
 exports.addSourceIntegration = addSourceIntegration;
+exports.addSourceIntegrationNew = addSourceIntegrationNew;
 
 var _Client = require("./Client.js");
 
@@ -216,6 +223,8 @@ var _EVENT_TYPES = require("./EVENT_TYPES.js");
 var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function addSourceIntegration(type, callback) {
   var additionalState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -247,6 +256,137 @@ function addSourceIntegration(type, callback) {
       }
     }
   });
+}
+
+var STEPS = exports.STEPS = {
+  CREATE: "CREATE",
+  AUTHORIZE: "AUTHORIZE",
+  CHECK: "CHECK",
+  SELECT_FIELDS: "SELECT_FIELDS"
+};
+
+function getCreateContext(baseContext, options) {
+  if (!options.type) {
+    throw new Error("You must specify `options.type`");
+  }
+  return Object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.create",
+      params: {
+        route: options.type
+      }
+    }
+  });
+}
+
+function assertOptionsId(options) {
+  if (!options.id) {
+    throw new Error("You must specify `options.id`");
+  }
+}
+
+function getAuthorizeContext(baseContext, options) {
+  assertOptionsId(options);
+  return Object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.authorize",
+      params: {
+        id: options.id
+      }
+    }
+  });
+}
+
+function getCheckContext(baseContext, options) {
+  assertOptionsId(options);
+  if (!options.check_job_name) {
+    throw new Error("You must specify `options.check_job_name`");
+  }
+  return Object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.check",
+      params: {
+        id: options.id,
+        check_job_name: options.check_job_name
+      }
+    }
+  });
+}
+
+function getSelectFieldsContext(baseContext, options) {
+  assertOptionsId(options);
+  if (!options.check_job_name) {
+    throw new Error("You must specify `options.check_job_name`");
+  }
+  return Object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.fields",
+      params: {
+        id: options.id
+      }
+    }
+  });
+}
+
+function getContext(baseContext, step, options) {
+  var _getContextFns;
+
+  var getContextFns = (_getContextFns = {}, _defineProperty(_getContextFns, STEPS.CREATE, getCreateContext), _defineProperty(_getContextFns, STEPS.AUTHORIZE, getAuthorizeContext), _defineProperty(_getContextFns, STEPS.CHECK, getCheckContext), _defineProperty(_getContextFns, STEPS.SELECT_FIELDS, getSelectFieldsContext), _getContextFns);
+  var getContextFn = getContextFns[step];
+  if (getContextFn) {
+    return getContextFn(baseContext, options);
+  }
+  return context;
+}
+
+function addSourceIntegrationNew(step, options, _callback) {
+  var id = options.id,
+      check_job_name = options.check_job_name,
+      type = options.type,
+      default_selections = options.default_selections;
+
+  var baseContext = {
+    version: 3,
+    hideNav: true,
+    preventIntegrationFormClose: true,
+    additionalState: {
+      default_selections: default_selections
+    }
+  };
+  var context = getContext(baseContext, step, options);
+
+  var client = new _Client2.default();
+  var callbackInvoked = false;
+  var data = void 0;
+  function callback() {
+    if (!callbackInvoked) {
+      callbackInvoked = true;
+      _callback.apply(undefined, arguments);
+    }
+  }
+
+  client.subscribe(function (event) {
+    console.log(event);
+    // if (event.type === EVENT_TYPES.CONNECTION_AUTHORIZED && event.data.connectionId === connectionId) {
+    //   console.log("authorized successfully");
+    //   callback(event.data);
+    //   client.close();
+    // } else if (event.type === EVENT_TYPES.ERROR_AUTHORIZING_CONNCTION && event.data.connectionId === connectionId) {
+    //   console.log("error authorizing connection");
+    //   callback();
+    //   client.close();
+    // } else if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.connectionId === connectionId) {
+    //   console.log("error loading connection");
+    //   callback();
+    //   client.close();
+    // } else
+    if (event.type === _EVENT_TYPES2.default.CLOSED) {
+      console.log("window closed");
+      callback();
+      client.close();
+    }
+  });
+  client.initialize(context);
 }
 
 },{"./Client.js":1,"./EVENT_TYPES.js":2}]},{},[3])(3)

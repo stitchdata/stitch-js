@@ -17,7 +17,7 @@ const SCENARIOS = [{
   name: "check",
   title: "Display connection check",
   invoke: Stitch.displayDiscoveryOutputForSource,
-  fields: new Set([...COMMON_FIELDS, "id", "check_job_name"])
+  fields: new Set([...COMMON_FIELDS, "id", "discovery_job_name"])
 }, {
   name: "selectFields",
   title: "Select fields",
@@ -53,8 +53,8 @@ const FIELD_CONFIG = [{
   name: "Connection type",
   parseInput: parseString
 }, {
-  key: "check_job_name",
-  name: "Check job name",
+  key: "discovery_job_name",
+  name: "Discovery job name",
   parseInput: parseString
 }, {
   key: "ephemeral_token",

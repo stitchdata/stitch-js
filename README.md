@@ -126,7 +126,7 @@ Stitch.addSource({
 Options:
 
 - `id` (required)
-- `check_job_name` (required)
+- `discovery_job_name` (required)
 
 Example usage:
 
@@ -135,7 +135,7 @@ import * as Stitch from "stitch-client";
 
 Stitch.displayDiscoveryOutputForSource({
   id: 123,
-  check_job_name: "987-123-4567891234-checks"
+  discovery_job_name: "987-123-4567891234-checks"
 }).then((result) => {
   console.log(`Integration created, type=${result.type}, id=${result.id}`);
 }).catch((error) => {

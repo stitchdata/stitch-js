@@ -4,8 +4,8 @@ import EVENT_TYPES from "./EVENT_TYPES.js";
 export const STEPS = {
   CREATE: "CREATE",
   AUTHORIZE: "AUTHORIZE",
-  CHECK: "CHECK",
-  SELECT_FIELDS: "SELECT_FIELDS"
+  DISCOVER: "DISCOVER",
+  SELECT_STREAMS: "SELECT_STREAMS"
 };
 
 function getCreateContext(baseContext, options) {
@@ -40,23 +40,23 @@ function getAuthorizeContext(baseContext, options) {
   });
 }
 
-function getCheckContext(baseContext, options) {
+function getDiscoveryContext(baseContext, options) {
   assertOptionsId(options);
-  if (!options.checkJobName) {
-    throw new Error("You must specify `options.checkJobName`");
+  if (!options.discovery_job_name) {
+    throw new Error("You must specify `options.discovery_job_name`");
   }
   return Object.assign(baseContext, {
     targetState: {
       name: "app.connections.details.check",
       params: {
         id: options.id,
-        check_job_name: options.check_job_name
+        check_job_name: options.discovery_job_name
       }
     }
   });
 }
 
-function getSelectFieldsContext(baseContext, options) {
+function getSelectStreamsContext(baseContext, options) {
   assertOptionsId(options);
   return Object.assign(baseContext, {
     targetState: {
@@ -72,8 +72,8 @@ function getContext(baseContext, step, options) {
   const getContextFns = {
     [STEPS.CREATE]: getCreateContext,
     [STEPS.AUTHORIZE]: getAuthorizeContext,
-    [STEPS.CHECK]: getCheckContext,
-    [STEPS.SELECT_FIELDS]: getSelectFieldsContext
+    [STEPS.DISCOVER]: getDiscoveryContext,
+    [STEPS.SELECT_STREAMS]: getSelectStreamsContext
   };
   const getContextFn = getContextFns[step];
   if (getContextFn) {
@@ -85,7 +85,6 @@ function getContext(baseContext, step, options) {
 function upsertSourceIntegration(step, options) {
   let {
     id,
-    check_job_name,
     type,
     default_streams: default_selections,
     ephemeral_token
@@ -139,9 +138,9 @@ export function authorizeSource(options) {
 }
 
 export function displayDiscoveryOutputForSource(options) {
-  return upsertSourceIntegration(STEPS.CHECK, options);
+  return upsertSourceIntegration(STEPS.DISCOVER, options);
 }
 
 export function selectStreamsForSource(options) {
-  return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
+  return upsertSourceIntegration(STEPS.SELECT_STREAMS, options);
 }

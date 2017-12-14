@@ -232,8 +232,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var STEPS = exports.STEPS = {
   CREATE: "CREATE",
   AUTHORIZE: "AUTHORIZE",
-  CHECK: "CHECK",
-  SELECT_FIELDS: "SELECT_FIELDS"
+  DISCOVER: "DISCOVER",
+  SELECT_STREAMS: "SELECT_STREAMS"
 };
 
 function getCreateContext(baseContext, options) {
@@ -268,23 +268,23 @@ function getAuthorizeContext(baseContext, options) {
   });
 }
 
-function getCheckContext(baseContext, options) {
+function getDiscoveryContext(baseContext, options) {
   assertOptionsId(options);
-  if (!options.checkJobName) {
-    throw new Error("You must specify `options.checkJobName`");
+  if (!options.discovery_job_name) {
+    throw new Error("You must specify `options.discovery_job_name`");
   }
   return Object.assign(baseContext, {
     targetState: {
       name: "app.connections.details.check",
       params: {
         id: options.id,
-        check_job_name: options.check_job_name
+        check_job_name: options.discovery_job_name
       }
     }
   });
 }
 
-function getSelectFieldsContext(baseContext, options) {
+function getSelectStreamsContext(baseContext, options) {
   assertOptionsId(options);
   return Object.assign(baseContext, {
     targetState: {
@@ -299,7 +299,7 @@ function getSelectFieldsContext(baseContext, options) {
 function getContext(baseContext, step, options) {
   var _getContextFns;
 
-  var getContextFns = (_getContextFns = {}, _defineProperty(_getContextFns, STEPS.CREATE, getCreateContext), _defineProperty(_getContextFns, STEPS.AUTHORIZE, getAuthorizeContext), _defineProperty(_getContextFns, STEPS.CHECK, getCheckContext), _defineProperty(_getContextFns, STEPS.SELECT_FIELDS, getSelectFieldsContext), _getContextFns);
+  var getContextFns = (_getContextFns = {}, _defineProperty(_getContextFns, STEPS.CREATE, getCreateContext), _defineProperty(_getContextFns, STEPS.AUTHORIZE, getAuthorizeContext), _defineProperty(_getContextFns, STEPS.DISCOVER, getDiscoveryContext), _defineProperty(_getContextFns, STEPS.SELECT_STREAMS, getSelectStreamsContext), _getContextFns);
   var getContextFn = getContextFns[step];
   if (getContextFn) {
     return getContextFn(baseContext, options);
@@ -309,7 +309,6 @@ function getContext(baseContext, step, options) {
 
 function upsertSourceIntegration(step, options) {
   var id = options.id,
-      check_job_name = options.check_job_name,
       type = options.type,
       default_selections = options.default_streams,
       ephemeral_token = options.ephemeral_token;
@@ -360,11 +359,11 @@ function authorizeSource(options) {
 }
 
 function displayDiscoveryOutputForSource(options) {
-  return upsertSourceIntegration(STEPS.CHECK, options);
+  return upsertSourceIntegration(STEPS.DISCOVER, options);
 }
 
 function selectStreamsForSource(options) {
-  return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
+  return upsertSourceIntegration(STEPS.SELECT_STREAMS, options);
 }
 
 },{"./Client.js":1,"./EVENT_TYPES.js":2}]},{},[3])(3)

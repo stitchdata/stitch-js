@@ -29,7 +29,7 @@ Here's an example of creating a new Adroll integration:
 // available as window.Stitch):
 import * as Stitch from "stitch-client";
 
-Stitch.addSourceIntegration({type: "adroll"}).then((result) => {
+Stitch.addSource({type: "adroll"}).then((result) => {
   console.log(`Integration created, type=${result.type}, id=${result.id}`);
 }).catch((error) => {
   console.log("Integration not created.", error);
@@ -70,7 +70,7 @@ When you send a user to a particular step, the user will also be prompted to com
 
 Each API function expects specific `options` properties, but a couple of optional properties are supported by all API functions:
 
-- `default_selections`: (optional) this property will be used to set default selections for the data structures to be replicated during the source integration setup. It should be an object of the form `{"table_name": true}`. **Note:** If a table name is given that is not produced by the source
+- `default_streams`: (optional) this property will be used to set default selections for the data structures to be replicated during the source integration setup. It should be an object of the form `{"table_name": true}`. **Note:** If a table name is given that is not produced by the source
 integration, it is ignored. Values other than `true` are also ignored, and
 nesting of default selections is not currently supported - only top level
 tables can be provided.
@@ -82,9 +82,9 @@ Here's an example of adding a Hubspot integration using an ephemeral token and d
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.addSourceIntegration({
+Stitch.addSource({
   type: "platform.hubspot",
-  default_selections: {"campaigns": true, "companies": true},
+  default_streams: {"campaigns": true, "companies": true},
   ephemeral_token: "some-ephemeral-token"
 }).then((result) => {
   console.log(`Integration created, type=${result.type}, id=${result.id}`);
@@ -93,7 +93,7 @@ Stitch.addSourceIntegration({
 });
 ```
 
-### `addSourceIntegration(options)`
+### `addSource(options)`
 
 Options:
 
@@ -101,7 +101,7 @@ Options:
 
 (See example usage above.)
 
-### `authorizeSourceIntegration(options)`
+### `authorizeSource(options)`
 
 Options:
 
@@ -112,7 +112,7 @@ Example usage:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.addSourceIntegration({
+Stitch.addSource({
   id: 123
 }).then((result) => {
   console.log(`Integration created, type=${result.type}, id=${result.id}`);
@@ -121,7 +121,7 @@ Stitch.addSourceIntegration({
 });
 ```
 
-### `runCheckForSourceIntegration(options)`
+### `displayDiscoveryOutputForSource(options)`
 
 Options:
 
@@ -133,7 +133,7 @@ Example usage:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.runCheckForSourceIntegration({
+Stitch.displayDiscoveryOutputForSource({
   id: 123,
   check_job_name: "987-123-4567891234-checks"
 }).then((result) => {
@@ -143,7 +143,7 @@ Stitch.runCheckForSourceIntegration({
 });
 ```
 
-### `selectFieldsForSourceIntegration(options)`
+### `selectStreamsForSource(options)`
 
 Options:
 
@@ -154,7 +154,7 @@ Example usage:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.selectFieldsForSourceIntegration({
+Stitch.selectStreamsForSource({
   id: 123
 }).then((result) => {
   console.log(`Integration created, type=${result.type}, id=${result.id}`);

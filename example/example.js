@@ -1,27 +1,27 @@
 const COMMON_FIELDS = [
-  "default_selections",
+  "default_streams",
   "ephemeral_token"
 ];
 
 const SCENARIOS = [{
   name: "create",
   title: "Create new integration",
-  invoke: Stitch.addSourceIntegration,
+  invoke: Stitch.addSource,
   fields: new Set([...COMMON_FIELDS, "type"])
 }, {
   name: "authorize",
   title: "Authorize integration",
-  invoke: Stitch.authorizeSourceIntegration,
+  invoke: Stitch.authorizeSource,
   fields: new Set([...COMMON_FIELDS, "id"])
 }, {
   name: "check",
   title: "Display connection check",
-  invoke: Stitch.runCheckForSourceIntegration,
+  invoke: Stitch.displayDiscoveryOutputForSource,
   fields: new Set([...COMMON_FIELDS, "id", "check_job_name"])
 }, {
   name: "selectFields",
   title: "Select fields",
-  invoke: Stitch.selectFieldsForSourceIntegration,
+  invoke: Stitch.selectStreamsForSource,
   fields: new Set([...COMMON_FIELDS, "id"])
 }];
 
@@ -61,7 +61,7 @@ const FIELD_CONFIG = [{
   name: "Ephemeral token (optional)",
   parseInput: parseOptionalString
 }, {
-  key: "default_selections",
+  key: "default_streams",
   name: "Default selections (optional, comma-separated)",
   parseInput: (value) => {
     if (value && value.length > 0) {

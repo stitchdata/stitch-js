@@ -198,10 +198,10 @@ var Client = require("./Client.js");
 var utils = require("./utils.js");
 
 module.exports = {
-  addSourceIntegration: utils.addSourceIntegration,
-  authorizeSourceIntegration: utils.authorizeSourceIntegration,
-  runCheckForSourceIntegration: utils.runCheckForSourceIntegration,
-  selectFieldsForSourceIntegration: utils.selectFieldsForSourceIntegration
+  addSource: utils.addSource,
+  authorizeSource: utils.authorizeSource,
+  displayDiscoveryOutputForSource: utils.displayDiscoveryOutputForSource,
+  selectStreamsForSource: utils.selectStreamsForSource
 };
 
 },{"./Client.js":1,"./utils.js":4}],4:[function(require,module,exports){
@@ -211,10 +211,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.STEPS = undefined;
-exports.addSourceIntegration = addSourceIntegration;
-exports.authorizeSourceIntegration = authorizeSourceIntegration;
-exports.runCheckForSourceIntegration = runCheckForSourceIntegration;
-exports.selectFieldsForSourceIntegration = selectFieldsForSourceIntegration;
+exports.addSource = addSource;
+exports.authorizeSource = authorizeSource;
+exports.displayDiscoveryOutputForSource = displayDiscoveryOutputForSource;
+exports.selectStreamsForSource = selectStreamsForSource;
 
 var _Client = require("./Client.js");
 
@@ -310,7 +310,7 @@ function upsertSourceIntegration(step, options) {
   var id = options.id,
       check_job_name = options.check_job_name,
       type = options.type,
-      default_selections = options.default_selections,
+      default_selections = options.default_streams,
       ephemeral_token = options.ephemeral_token;
 
   var baseContext = {
@@ -318,8 +318,8 @@ function upsertSourceIntegration(step, options) {
     hideNav: true,
     preventIntegrationFormClose: true,
     additionalState: {
-      default_selections: default_selections,
-      ephemeral_token: ephemeral_token
+      default_selections,
+      ephemeral_token
     }
   };
   var context = getContext(baseContext, step, options);
@@ -348,19 +348,19 @@ function upsertSourceIntegration(step, options) {
   });
 }
 
-function addSourceIntegration(options) {
+function addSource(options) {
   return upsertSourceIntegration(STEPS.CREATE, options);
 }
 
-function authorizeSourceIntegration(options) {
+function authorizeSource(options) {
   return upsertSourceIntegration(STEPS.AUTHORIZE, options);
 }
 
-function runCheckForSourceIntegration(options) {
+function displayDiscoveryOutputForSource(options) {
   return upsertSourceIntegration(STEPS.CHECK, options);
 }
 
-function selectFieldsForSourceIntegration(options) {
+function selectStreamsForSource(options) {
   return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
 }
 

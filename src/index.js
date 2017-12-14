@@ -2,8 +2,8 @@ const Client = require("./Client.js");
 const utils = require("./utils.js");
 
 module.exports = {
-  addSourceIntegration: utils.addSourceIntegration,
-  authorizeSourceIntegration: utils.authorizeSourceIntegration,
-  runCheckForSourceIntegration: utils.runCheckForSourceIntegration,
-  selectFieldsForSourceIntegration: utils.selectFieldsForSourceIntegration
+  addSource: utils.addSource,
+  authorizeSource: utils.authorizeSource,
+  displayDiscoveryOutputForSource: utils.displayDiscoveryOutputForSource,
+  selectStreamsForSource: utils.selectStreamsForSource
 };

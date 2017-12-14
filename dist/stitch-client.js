@@ -198,10 +198,10 @@ var Client = require("./Client.js");
 var utils = require("./utils.js");
 
 module.exports = {
-  Client: Client,
   addSourceIntegration: utils.addSourceIntegration,
-  addSourceIntegrationNew: utils.addSourceIntegrationNew,
-  SOURCE_INTEGRATION_STEPS: utils.STEPS
+  authorizeSourceIntegration: utils.authorizeSourceIntegration,
+  runCheckForSourceIntegration: utils.runCheckForSourceIntegration,
+  selectFieldsForSourceIntegration: utils.selectFieldsForSourceIntegration
 };
 
 },{"./Client.js":1,"./utils.js":4}],4:[function(require,module,exports){
@@ -212,7 +212,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.STEPS = undefined;
 exports.addSourceIntegration = addSourceIntegration;
-exports.addSourceIntegrationNew = addSourceIntegrationNew;
+exports.authorizeSourceIntegration = authorizeSourceIntegration;
+exports.runCheckForSourceIntegration = runCheckForSourceIntegration;
+exports.selectFieldsForSourceIntegration = selectFieldsForSourceIntegration;
 
 var _Client = require("./Client.js");
 
@@ -225,38 +227,6 @@ var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function addSourceIntegration(type, callback) {
-  var additionalState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-  var client = new _Client2.default();
-  var callbackInvoked = false;
-  var integration = void 0;
-  client.subscribe(function (event) {
-    if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && event.data.type === type) {
-      integration = event.data;
-      //CLOSED EVENTS should never get into this callback. see _onMessage in Client.js
-    } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
-      client.close();
-      if (!callbackInvoked) {
-        callback(integration);
-        callbackInvoked = true;
-      }
-    }
-  });
-  client.initialize({
-    version: 2,
-    hideNav: true,
-    preventIntegrationFormClose: true,
-    additionalState: additionalState,
-    targetState: {
-      name: "app.connections.create",
-      params: {
-        route: type
-      }
-    }
-  });
-}
 
 var STEPS = exports.STEPS = {
   CREATE: "CREATE",
@@ -299,8 +269,8 @@ function getAuthorizeContext(baseContext, options) {
 
 function getCheckContext(baseContext, options) {
   assertOptionsId(options);
-  if (!options.check_job_name) {
-    throw new Error("You must specify `options.check_job_name`");
+  if (!options.checkJobName) {
+    throw new Error("You must specify `options.checkJobName`");
   }
   return Object.assign(baseContext, {
     targetState: {
@@ -315,9 +285,6 @@ function getCheckContext(baseContext, options) {
 
 function getSelectFieldsContext(baseContext, options) {
   assertOptionsId(options);
-  if (!options.check_job_name) {
-    throw new Error("You must specify `options.check_job_name`");
-  }
   return Object.assign(baseContext, {
     targetState: {
       name: "app.connections.details.fields",
@@ -339,54 +306,62 @@ function getContext(baseContext, step, options) {
   return context;
 }
 
-function addSourceIntegrationNew(step, options, _callback) {
+function upsertSourceIntegration(step, options) {
   var id = options.id,
       check_job_name = options.check_job_name,
       type = options.type,
-      default_selections = options.default_selections;
+      default_selections = options.default_selections,
+      ephemeral_token = options.ephemeral_token;
 
   var baseContext = {
-    version: 3,
+    version: 2,
     hideNav: true,
     preventIntegrationFormClose: true,
     additionalState: {
-      default_selections: default_selections
+      default_selections: default_selections,
+      ephemeral_token: ephemeral_token
     }
   };
   var context = getContext(baseContext, step, options);
 
-  var client = new _Client2.default();
-  var callbackInvoked = false;
-  var data = void 0;
-  function callback() {
-    if (!callbackInvoked) {
-      callbackInvoked = true;
-      _callback.apply(undefined, arguments);
-    }
-  }
+  return new Promise(function (resolve, reject) {
+    var client = new _Client2.default();
+    var integration = void 0;
+    client.subscribe(function (event) {
+      console.log("event", event);
 
-  client.subscribe(function (event) {
-    console.log(event);
-    // if (event.type === EVENT_TYPES.CONNECTION_AUTHORIZED && event.data.connectionId === connectionId) {
-    //   console.log("authorized successfully");
-    //   callback(event.data);
-    //   client.close();
-    // } else if (event.type === EVENT_TYPES.ERROR_AUTHORIZING_CONNCTION && event.data.connectionId === connectionId) {
-    //   console.log("error authorizing connection");
-    //   callback();
-    //   client.close();
-    // } else if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.connectionId === connectionId) {
-    //   console.log("error loading connection");
-    //   callback();
-    //   client.close();
-    // } else
-    if (event.type === _EVENT_TYPES2.default.CLOSED) {
-      console.log("window closed");
-      callback();
-      client.close();
-    }
+      if (event.type === _EVENT_TYPES2.default.ERROR_LOADING_CONNECTION && event.data.id === id) {
+        reject(new Error("Integration with id=" + id + " not found."));
+        client.close();
+      } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
+        if (integration) {
+          resolve(integration);
+        } else {
+          reject(new Error("App closed without saving integration."));
+        }
+        client.close();
+      } else if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && type && event.data.type === type || event.type === _EVENT_TYPES2.default.CONNECTION_UPDATED && id && event.data.id === id) {
+        integration = event.data;
+      }
+    });
+    client.initialize(context);
   });
-  client.initialize(context);
+}
+
+function addSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.CREATE, options);
+}
+
+function authorizeSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.AUTHORIZE, options);
+}
+
+function runCheckForSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.CHECK, options);
+}
+
+function selectFieldsForSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
 }
 
 },{"./Client.js":1,"./EVENT_TYPES.js":2}]},{},[3])(3)

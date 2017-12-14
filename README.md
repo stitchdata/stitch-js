@@ -21,33 +21,22 @@ Reference `dist/stitch-client.min.js` from a script tag:
 
 ## Example usage
 
+Here's an example of creating a new Adroll integration:
+
 ```javascript
 // Creating a new integration
-window.Stitch.addSourceIntegration({type: "adroll"}, (result) => {
-  if (result) {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
-  } else {
-    console.log("Integration not created.");
-  }
-});
-```
-
-Or, if you're using ES6 modules:
-
-```javascript
+// If you're not using ES6 modules, you can remove this line (Stitch will be
+// available as window.Stitch):
 import * as Stitch from "stitch-client";
 
-Stitch.addSourceIntegration({type: "adroll"}, (result) => {
-  if (result) {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
-  } else {
-    console.log("Integration not created.");
-  }
+Stitch.addSourceIntegration({type: "adroll"}).then((result) => {
+  console.log(`Integration created, type=${result.type}, id=${result.id}`);
+}).catch((error) => {
+  console.log("Integration not created.", error);
 });
 ```
 
-This repository also includes a complete (but very basic)
-example application in the `example/` directory.
+This repository also includes an example application in the `example/` directory.
 
 You can run `npm install` from the root directory of the repo to install `http-server`, and then start a server to run this
 
@@ -66,7 +55,7 @@ Stitch.js _officially_ supports the following integration types:
  - `salesforce`
  - `zendesk`
 
-All of the public API functions accept two arguments: an `options` object, and a `callback` function.
+All of the public API functions expect an `options` object as the only argument, and return a `Promise`.
 
 **Note:** Stitch uses a step-based flow for creating integrations. The flow is:
 
@@ -91,43 +80,88 @@ tables can be provided.
 Here's an example of adding a Hubspot integration using an ephemeral token and default field selections to pre-select the campaigns and companies tables:
 
 ```javascript
-window.Stitch.addSourceIntegration({
+import * as Stitch from "stitch-client";
+
+Stitch.addSourceIntegration({
   type: "platform.hubspot",
   default_selections: {"campaigns": true, "companies": true},
   ephemeral_token: "some-ephemeral-token"
-}, (result) => {
-  if (result) {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
-  } else {
-    console.log("Integration not created.");
-  }
+}).then((result) => {
+  console.log(`Integration created, type=${result.type}, id=${result.id}`);
+}).catch((error) => {
+  console.log("Integration not created.", error);
 });
 ```
 
-### `addSourceIntegration(options, callback)`
+### `addSourceIntegration(options)`
 
 Options:
 
 - `type` (required)
 
-### `authorizeSourceIntegration(options, callback)`
+(See example usage above.)
+
+### `authorizeSourceIntegration(options)`
 
 Options:
 
 - `id` (required)
 
-### `runCheckForSourceIntegration(options, callback)`
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.addSourceIntegration({
+  id: 123
+}).then((result) => {
+  console.log(`Integration created, type=${result.type}, id=${result.id}`);
+}).catch((error) => {
+  console.log("Integration not created.", error);
+});
+```
+
+### `runCheckForSourceIntegration(options)`
 
 Options:
 
 - `id` (required)
 - `check_job_name` (required)
 
-### `selectFieldsForSourceIntegration(options, callback)`
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.runCheckForSourceIntegration({
+  id: 123,
+  check_job_name: "987-123-4567891234-checks"
+}).then((result) => {
+  console.log(`Integration created, type=${result.type}, id=${result.id}`);
+}).catch((error) => {
+  console.log("Integration not created.", error);
+});
+```
+
+### `selectFieldsForSourceIntegration(options)`
 
 Options:
 
 - `id` (required)
+
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.selectFieldsForSourceIntegration({
+  id: 123
+}).then((result) => {
+  console.log(`Integration created, type=${result.type}, id=${result.id}`);
+}).catch((error) => {
+  console.log("Integration not created.", error);
+});
+```
 
 ## Building
 

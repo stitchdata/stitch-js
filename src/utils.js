@@ -58,9 +58,6 @@ function getCheckContext(baseContext, options) {
 
 function getSelectFieldsContext(baseContext, options) {
   assertOptionsId(options);
-  if (!options.check_job_name) {
-    throw new Error("You must specify `options.check_job_name`");
-  }
   return Object.assign(baseContext, {
     targetState: {
       name: "app.connections.details.fields",
@@ -85,7 +82,7 @@ function getContext(baseContext, step, options) {
   return context;
 }
 
-function upsertSourceIntegration(step, options, _callback) {
+function upsertSourceIntegration(step, options) {
   let {
     id,
     check_job_name,
@@ -99,63 +96,50 @@ function upsertSourceIntegration(step, options, _callback) {
     preventIntegrationFormClose: true,
     additionalState: {
       default_selections,
-      ephimeral_token
+      ephemeral_token
     }
   };
   const context = getContext(baseContext, step, options);
 
-  const client = new Client();
-  let callbackInvoked = false;
-  let integration;
-  client.subscribe((event) => {
-    console.log(event);
-    if (event.type === EVENT_TYPES.CONNECTION_CREATED && event.data.type === type)  {
+  return new Promise((resolve, reject) => {
+    const client = new Client();
+    let integration;
+    client.subscribe((event) => {
+      console.log("event", event);
+
+      if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.id === id) {
+        reject(new Error(`Integration with id=${id} not found.`));
+        client.close();
+      } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
+        if (integration) {
+          resolve(integration);
+        } else {
+          reject(new Error(`App closed without saving integration.`));
+        }
+        client.close();
+      } else if ((event.type === EVENT_TYPES.CONNECTION_CREATED && type && event.data.type === type) ||
+        (event.type === EVENT_TYPES.CONNECTION_UPDATED && id && event.data.id === id))
+      {
         integration = event.data;
-        //CLOSED EVENTS should never get into this callback. see _onMessage in Client.js
-    } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
-      client.close();
-      if (!callbackInvoked) {
-        callback(integration);
-        callbackInvoked = true;
       }
-    }
+
+    });
+    client.initialize(context);
   });
-  // client.subscribe((event) => {
-  //   console.log(event);
-  //   // if (event.type === EVENT_TYPES.CONNECTION_AUTHORIZED && event.data.connectionId === connectionId) {
-  //   //   console.log("authorized successfully");
-  //   //   callback(event.data);
-  //   //   client.close();
-  //   // } else if (event.type === EVENT_TYPES.ERROR_AUTHORIZING_CONNCTION && event.data.connectionId === connectionId) {
-  //   //   console.log("error authorizing connection");
-  //   //   callback();
-  //   //   client.close();
-  //   // } else if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.connectionId === connectionId) {
-  //   //   console.log("error loading connection");
-  //   //   callback();
-  //   //   client.close();
-  //   // } else
-  //   if (event.type === EVENT_TYPES.CLOSED) {
-  //     console.log("window closed");
-  //     callback();
-  //     client.close();
-  //   }
-  // });
-  client.initialize(context);
 }
 
-export function addSourceIntegration(options, callback) {
-  return upsertSourceIntegration(STEPS.CREATE, options, callback);
+export function addSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.CREATE, options);
 }
 
-export function authorizeSourceIntegration(options, callback) {
-  return upsertSourceIntegration(STEPS.AUTHORIZE, options, callback);
+export function authorizeSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.AUTHORIZE, options);
 }
 
-export function runCheckForSourceIntegration(options, callback) {
-  return upsertSourceIntegration(STEPS.CHECK, options, callback);
+export function runCheckForSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.CHECK, options);
 }
 
-export function selectFieldsForSourceIntegration(options, callback) {
-  return upsertSourceIntegration(STEPS.SELECT_FIELDS, options, callback);
+export function selectFieldsForSourceIntegration(options) {
+  return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
 }

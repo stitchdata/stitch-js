@@ -188,6 +188,7 @@ exports.default = Object.freeze({
   CONNECTION_UPDATED: "connectionUpdated",
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
+  INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
 
@@ -318,8 +319,8 @@ function upsertSourceIntegration(step, options) {
     hideNav: true,
     preventIntegrationFormClose: true,
     additionalState: {
-      default_selections,
-      ephemeral_token
+      default_selections: default_selections,
+      ephemeral_token: ephemeral_token
     }
   };
   var context = getContext(baseContext, step, options);
@@ -328,19 +329,21 @@ function upsertSourceIntegration(step, options) {
     var client = new _Client2.default();
     var integration = void 0;
     client.subscribe(function (event) {
-      console.log("event", event);
 
       if (event.type === _EVENT_TYPES2.default.ERROR_LOADING_CONNECTION && event.data.id === id) {
         reject(new Error("Integration with id=" + id + " not found."));
         client.close();
-      } else if (event.type === _EVENT_TYPES2.default.CLOSED || event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
+      } else if (event.type === _EVENT_TYPES2.default.CLOSED) {
         if (integration) {
           resolve(integration);
         } else {
-          reject(new Error("App closed without saving integration."));
+          reject(new Error("App closed before reaching end of flow."));
         }
         client.close();
-      } else if (event.type === _EVENT_TYPES2.default.CONNECTION_CREATED && type && event.data.type === type || event.type === _EVENT_TYPES2.default.CONNECTION_UPDATED && id && event.data.id === id) {
+      } else if (event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {
+        resolve(integration);
+        client.close();
+      } else if (event.type === _EVENT_TYPES2.default.INTEGRATION_FLOW_COMPLETED && (type && event.data.type === type || id && event.data.id === id)) {
         integration = event.data;
       }
     });

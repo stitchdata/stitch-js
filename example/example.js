@@ -133,12 +133,10 @@ class SampleApp extends React.PureComponent {
         return options;
       }, {});
     } catch (e) {
-      console.log("Form invalid", e);
       return;
     }
 
     const successCallback = (result) => {
-      console.log("success callback", result);
       this.setState({
         scenarioState: STATES.SUCCESS,
         result
@@ -147,7 +145,6 @@ class SampleApp extends React.PureComponent {
     this.successCallback = successCallback;
 
     const errorCallback = (error) => {
-      console.log("error callback", error);
       this.setState({
         scenarioState: STATES.FAILURE,
         result: {

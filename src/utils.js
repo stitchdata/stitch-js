@@ -87,7 +87,7 @@ function upsertSourceIntegration(step, options) {
     id,
     check_job_name,
     type,
-    default_selections,
+    default_streams: default_selections,
     ephemeral_token
   } = options;
   const baseContext = {
@@ -105,21 +105,23 @@ function upsertSourceIntegration(step, options) {
     const client = new Client();
     let integration;
     client.subscribe((event) => {
-      console.log("event", event);
 
       if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.id === id) {
         reject(new Error(`Integration with id=${id} not found.`));
         client.close();
-      } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
-        if (integration) {
+      } else if (event.type === EVENT_TYPES.CLOSED) {
+        if (integration){
           resolve(integration);
         } else {
-          reject(new Error(`App closed without saving integration.`));
+          reject(new Error(`App closed before reaching end of flow.`));
         }
         client.close();
-      } else if ((event.type === EVENT_TYPES.CONNECTION_CREATED && type && event.data.type === type) ||
-        (event.type === EVENT_TYPES.CONNECTION_UPDATED && id && event.data.id === id))
-      {
+      } else if (event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
+        resolve(integration);
+        client.close();
+      } else if (event.type === EVENT_TYPES.INTEGRATION_FLOW_COMPLETED &&
+        ((type && event.data.type === type) || (id && event.data.id === id))
+      ) {
         integration = event.data;
       }
 
@@ -128,18 +130,18 @@ function upsertSourceIntegration(step, options) {
   });
 }
 
-export function addSourceIntegration(options) {
+export function addSource(options) {
   return upsertSourceIntegration(STEPS.CREATE, options);
 }
 
-export function authorizeSourceIntegration(options) {
+export function authorizeSource(options) {
   return upsertSourceIntegration(STEPS.AUTHORIZE, options);
 }
 
-export function runCheckForSourceIntegration(options) {
+export function displayDiscoveryOutputForSource(options) {
   return upsertSourceIntegration(STEPS.CHECK, options);
 }
 
-export function selectFieldsForSourceIntegration(options) {
+export function selectStreamsForSource(options) {
   return upsertSourceIntegration(STEPS.SELECT_FIELDS, options);
 }

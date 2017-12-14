@@ -6,5 +6,6 @@ export default Object.freeze({
   CONNECTION_UPDATED: "connectionUpdated",
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
+  INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });

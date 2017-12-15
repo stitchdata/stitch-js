@@ -163,6 +163,14 @@ Stitch.selectStreamsForSource({
 });
 ```
 
+### Errors
+
+If the user doesn't complete any of the steps successfully, the promise will be rejected with an instance of one of these error classes:
+
+- `AppClosedPrematurelyError`
+- `SourceNotFoundError`
+- `UnknownSourceTypeError`
+
 ## Building
 
 Install dev dependencies by running (from the root of this repo):

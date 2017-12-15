@@ -5,22 +5,22 @@ const COMMON_FIELDS = [
 
 const SCENARIOS = [{
   name: "create",
-  title: "Create new integration",
+  title: "Create new source",
   invoke: Stitch.addSource,
   fields: new Set([...COMMON_FIELDS, "type"])
 }, {
   name: "authorize",
-  title: "Authorize integration",
+  title: "Authorize source",
   invoke: Stitch.authorizeSource,
   fields: new Set([...COMMON_FIELDS, "id"])
 }, {
-  name: "check",
-  title: "Display connection check",
+  name: "discover",
+  title: "Display source discovery output",
   invoke: Stitch.displayDiscoveryOutputForSource,
   fields: new Set([...COMMON_FIELDS, "id", "discovery_job_name"])
 }, {
-  name: "selectFields",
-  title: "Select fields",
+  name: "selectStreams",
+  title: "Select streams",
   invoke: Stitch.selectStreamsForSource,
   fields: new Set([...COMMON_FIELDS, "id"])
 }];
@@ -139,17 +139,16 @@ class SampleApp extends React.PureComponent {
     const successCallback = (result) => {
       this.setState({
         scenarioState: STATES.SUCCESS,
-        result
+        result: JSON.stringify(result, null, "  ")
       });
     };
     this.successCallback = successCallback;
 
     const errorCallback = (error) => {
+      debugger
       this.setState({
         scenarioState: STATES.FAILURE,
-        result: {
-          message: error && error.message
-        }
+        result: `${error.constructor.name}: ${error.message}`
       });
     };
     this.errorCallback = errorCallback;
@@ -232,7 +231,7 @@ class SampleApp extends React.PureComponent {
             succeeded
           </div>
           <pre className="status__detail">
-            {JSON.stringify(result, null, "  ")}
+            {result}
           </pre>
         </div>
       );
@@ -245,7 +244,7 @@ class SampleApp extends React.PureComponent {
             {scenario.title.toLowerCase()}
           </div>
           <pre className="status__detail">
-            {JSON.stringify(result, null, "  ")}
+            {result}
           </pre>
         </div>
       );

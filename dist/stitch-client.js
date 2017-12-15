@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var HOST = "http://app.stitchdata.test:8088" || "https://app.stitchdata.com";
+var HOST = undefined || "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === "true" ? console.log : function () {};
 
@@ -183,11 +183,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = Object.freeze({
   BOOTSTRAP: "bootstrap",
   CLOSED: "closed",
-  CONNECTION_AUTHORIZED: "connectionAuthorized",
   CONNECTION_CREATED: "connectionCreated",
   CONNECTION_UPDATED: "connectionUpdated",
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
+  ERROR_LOADING_INTEGRATION_TYPE: "errorLoadingIntegrationType",
   INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
@@ -195,23 +195,10 @@ exports.default = Object.freeze({
 },{}],3:[function(require,module,exports){
 "use strict";
 
-var Client = require("./Client.js");
-var utils = require("./utils.js");
-
-module.exports = {
-  addSource: utils.addSource,
-  authorizeSource: utils.authorizeSource,
-  displayDiscoveryOutputForSource: utils.displayDiscoveryOutputForSource,
-  selectStreamsForSource: utils.selectStreamsForSource
-};
-
-},{"./Client.js":1,"./utils.js":4}],4:[function(require,module,exports){
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.STEPS = undefined;
+exports.AppClosedPrematurelyError = exports.UnknownSourceTypeError = exports.SourceNotFoundError = exports.STEPS = undefined;
 exports.addSource = addSource;
 exports.authorizeSource = authorizeSource;
 exports.displayDiscoveryOutputForSource = displayDiscoveryOutputForSource;
@@ -226,6 +213,12 @@ var _EVENT_TYPES = require("./EVENT_TYPES.js");
 var _EVENT_TYPES2 = _interopRequireDefault(_EVENT_TYPES);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -307,6 +300,51 @@ function getContext(baseContext, step, options) {
   return context;
 }
 
+var SourceNotFoundError = exports.SourceNotFoundError = function (_Error) {
+  _inherits(SourceNotFoundError, _Error);
+
+  function SourceNotFoundError(id) {
+    _classCallCheck(this, SourceNotFoundError);
+
+    var _this = _possibleConstructorReturn(this, (SourceNotFoundError.__proto__ || Object.getPrototypeOf(SourceNotFoundError)).call(this, "Integration with id " + id + " not found."));
+
+    _this.constructor = SourceNotFoundError;
+    return _this;
+  }
+
+  return SourceNotFoundError;
+}(Error);
+
+var UnknownSourceTypeError = exports.UnknownSourceTypeError = function (_Error2) {
+  _inherits(UnknownSourceTypeError, _Error2);
+
+  function UnknownSourceTypeError(type) {
+    _classCallCheck(this, UnknownSourceTypeError);
+
+    var _this2 = _possibleConstructorReturn(this, (UnknownSourceTypeError.__proto__ || Object.getPrototypeOf(UnknownSourceTypeError)).call(this, "Unknown source type: \"" + type + "\"."));
+
+    _this2.constructor = UnknownSourceTypeError;
+    return _this2;
+  }
+
+  return UnknownSourceTypeError;
+}(Error);
+
+var AppClosedPrematurelyError = exports.AppClosedPrematurelyError = function (_Error3) {
+  _inherits(AppClosedPrematurelyError, _Error3);
+
+  function AppClosedPrematurelyError() {
+    _classCallCheck(this, AppClosedPrematurelyError);
+
+    var _this3 = _possibleConstructorReturn(this, (AppClosedPrematurelyError.__proto__ || Object.getPrototypeOf(AppClosedPrematurelyError)).call(this, "App closed before reaching end of flow."));
+
+    _this3.constructor = AppClosedPrematurelyError;
+    return _this3;
+  }
+
+  return AppClosedPrematurelyError;
+}(Error);
+
 function upsertSourceIntegration(step, options) {
   var id = options.id,
       type = options.type,
@@ -330,13 +368,16 @@ function upsertSourceIntegration(step, options) {
     client.subscribe(function (event) {
 
       if (event.type === _EVENT_TYPES2.default.ERROR_LOADING_CONNECTION && event.data.id === id) {
-        reject(new Error("Integration with id=" + id + " not found."));
+        reject(new SourceNotFoundError(id));
+        client.close();
+      } else if (event.type === _EVENT_TYPES2.default.ERROR_LOADING_INTEGRATION_TYPE && type && event.data.type === type) {
+        reject(new UnknownSourceTypeError(type));
         client.close();
       } else if (event.type === _EVENT_TYPES2.default.CLOSED) {
         if (integration) {
           resolve(integration);
         } else {
-          reject(new Error("App closed before reaching end of flow."));
+          reject(new AppClosedPrematurelyError());
         }
         client.close();
       } else if (event.type === _EVENT_TYPES2.default.INTEGRATION_FORM_CLOSE) {

@@ -2194,6 +2194,7 @@ var promise = _core.Promise;
 
 var STEPS = {
   CREATE: "CREATE",
+  EDIT: "EDIT",
   AUTHORIZE: "AUTHORIZE",
   DISCOVER: "DISCOVER",
   SELECT_STREAMS: "SELECT_STREAMS"
@@ -2208,6 +2209,18 @@ function getCreateContext(baseContext, options) {
       name: "app.connections.create",
       params: {
         route: options.type
+      }
+    }
+  });
+}
+
+function getEditContext(baseContext, options) {
+  assertOptionsId(options);
+  return object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.edit",
+      params: {
+        id: options.id
       }
     }
   });
@@ -2262,7 +2275,7 @@ function getSelectStreamsContext(baseContext, options) {
 function getContext(baseContext, step, options) {
   var _getContextFns;
 
-  var getContextFns = (_getContextFns = {}, defineProperty(_getContextFns, STEPS.CREATE, getCreateContext), defineProperty(_getContextFns, STEPS.AUTHORIZE, getAuthorizeContext), defineProperty(_getContextFns, STEPS.DISCOVER, getDiscoveryContext), defineProperty(_getContextFns, STEPS.SELECT_STREAMS, getSelectStreamsContext), _getContextFns);
+  var getContextFns = (_getContextFns = {}, defineProperty(_getContextFns, STEPS.CREATE, getCreateContext), defineProperty(_getContextFns, STEPS.EDIT, getEditContext), defineProperty(_getContextFns, STEPS.AUTHORIZE, getAuthorizeContext), defineProperty(_getContextFns, STEPS.DISCOVER, getDiscoveryContext), defineProperty(_getContextFns, STEPS.SELECT_STREAMS, getSelectStreamsContext), _getContextFns);
   var getContextFn = getContextFns[step];
   if (getContextFn) {
     return getContextFn(baseContext, options);
@@ -2376,6 +2389,10 @@ function addSource(options) {
   return upsertSourceIntegration(STEPS.CREATE, options);
 }
 
+function editSource(options) {
+  return upsertSourceIntegration(STEPS.EDIT, options);
+}
+
 function authorizeSource(options) {
   return upsertSourceIntegration(STEPS.AUTHORIZE, options);
 }
@@ -2394,6 +2411,7 @@ exports.UnknownSourceTypeError = UnknownSourceTypeError;
 exports.AppClosedPrematurelyError = AppClosedPrematurelyError;
 exports.UpgradeEphemeralTokenError = UpgradeEphemeralTokenError;
 exports.addSource = addSource;
+exports.editSource = editSource;
 exports.authorizeSource = authorizeSource;
 exports.displayDiscoveryOutputForSource = displayDiscoveryOutputForSource;
 exports.selectStreamsForSource = selectStreamsForSource;

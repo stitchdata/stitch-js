@@ -5,6 +5,7 @@ import Promise from "core-js/library/fn/promise";
 
 export const STEPS = {
   CREATE: "CREATE",
+  EDIT: "EDIT",
   AUTHORIZE: "AUTHORIZE",
   DISCOVER: "DISCOVER",
   SELECT_STREAMS: "SELECT_STREAMS"
@@ -19,6 +20,18 @@ function getCreateContext(baseContext, options) {
       name: "app.connections.create",
       params: {
         route: options.type
+      }
+    }
+  });
+}
+
+function getEditContext(baseContext, options) {
+  assertOptionsId(options);
+  return Object.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.edit",
+      params: {
+        id: options.id
       }
     }
   });
@@ -73,6 +86,7 @@ function getSelectStreamsContext(baseContext, options) {
 function getContext(baseContext, step, options) {
   const getContextFns = {
     [STEPS.CREATE]: getCreateContext,
+    [STEPS.EDIT]: getEditContext,
     [STEPS.AUTHORIZE]: getAuthorizeContext,
     [STEPS.DISCOVER]: getDiscoveryContext,
     [STEPS.SELECT_STREAMS]: getSelectStreamsContext
@@ -170,6 +184,10 @@ function upsertSourceIntegration(step, options) {
 
 export function addSource(options) {
   return upsertSourceIntegration(STEPS.CREATE, options);
+}
+
+export function editSource(options) {
+  return upsertSourceIntegration(STEPS.EDIT, options);
 }
 
 export function authorizeSource(options) {

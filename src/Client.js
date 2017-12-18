@@ -1,7 +1,7 @@
 import EVENT_TYPES from "./EVENT_TYPES.js";
 import Object from "core-js/library/fn/object";
 
-const HOST = process.env.STITCH_JS_HOST || "https://app.stitchdata.com";
+const HOST = process.env.STITCH_JS_HOST;
 const ROOT = `${HOST}/v2/js-client`;
 const log =
   process.env.STITCH_JS_VERBOSE_OUTPUT === true ? console.log : function() {};

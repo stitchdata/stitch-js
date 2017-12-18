@@ -1269,7 +1269,7 @@ _export(_export.S + _export.F, 'Object', {
 
 var object = _core.Object;
 
-var HOST = "undefined" || "https://app.stitchdata.com";
+var HOST = "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === true ? console.log : function () {};
 

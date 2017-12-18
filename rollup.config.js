@@ -6,13 +6,12 @@ import replace from "rollup-plugin-replace";
 import pkg from "./package.json";
 import uglify from "rollup-plugin-uglify";
 
-console.log("main", process.env.STITCH_JS_HOST);
-
 const BASE_CONFIG = {
   input: "src/index.js",
   plugins: [
     replace({
-      "process.env.STITCH_JS_HOST": `"${process.env.STITCH_JS_HOST}"`,
+      "process.env.STITCH_JS_HOST": `"${process.env.STITCH_JS_HOST ||
+        "https://app.stitchdata.com"}"`,
       "process.env.STITCH_JS_VERBOSE_OUTPUT":
         process.env.STITCH_JS_VERBOSE_OUTPUT
     })

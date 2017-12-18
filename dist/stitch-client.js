@@ -127,6 +127,7 @@ class StitchClient {
 
 const STEPS = {
   CREATE: "CREATE",
+  EDIT: "EDIT",
   AUTHORIZE: "AUTHORIZE",
   DISCOVER: "DISCOVER",
   SELECT_STREAMS: "SELECT_STREAMS"
@@ -141,6 +142,18 @@ function getCreateContext(baseContext, options) {
       name: "app.connections.create",
       params: {
         route: options.type
+      }
+    }
+  });
+}
+
+function getEditContext(baseContext, options) {
+  assertOptionsId(options);
+  return Object$1.assign(baseContext, {
+    targetState: {
+      name: "app.connections.details.edit",
+      params: {
+        id: options.id
       }
     }
   });
@@ -195,6 +208,7 @@ function getSelectStreamsContext(baseContext, options) {
 function getContext(baseContext, step, options) {
   const getContextFns = {
     [STEPS.CREATE]: getCreateContext,
+    [STEPS.EDIT]: getEditContext,
     [STEPS.AUTHORIZE]: getAuthorizeContext,
     [STEPS.DISCOVER]: getDiscoveryContext,
     [STEPS.SELECT_STREAMS]: getSelectStreamsContext
@@ -294,6 +308,10 @@ function addSource(options) {
   return upsertSourceIntegration(STEPS.CREATE, options);
 }
 
+function editSource(options) {
+  return upsertSourceIntegration(STEPS.EDIT, options);
+}
+
 function authorizeSource(options) {
   return upsertSourceIntegration(STEPS.AUTHORIZE, options);
 }
@@ -306,4 +324,4 @@ function selectStreamsForSource(options) {
   return upsertSourceIntegration(STEPS.SELECT_STREAMS, options);
 }
 
-export { STEPS, SourceNotFoundError, UnknownSourceTypeError, AppClosedPrematurelyError, UpgradeEphemeralTokenError, addSource, authorizeSource, displayDiscoveryOutputForSource, selectStreamsForSource };
+export { STEPS, SourceNotFoundError, UnknownSourceTypeError, AppClosedPrematurelyError, UpgradeEphemeralTokenError, addSource, editSource, authorizeSource, displayDiscoveryOutputForSource, selectStreamsForSource };

@@ -8,6 +8,12 @@ const SCENARIOS = [
     fields: new Set([...COMMON_FIELDS, "type"])
   },
   {
+    name: "edit",
+    title: "Edit existing source",
+    invoke: Stitch.editSource,
+    fields: new Set([...COMMON_FIELDS, "id"])
+  },
+  {
     name: "authorize",
     title: "Authorize source",
     invoke: Stitch.authorizeSource,

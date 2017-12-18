@@ -6,6 +6,7 @@ export default Object.freeze({
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
   ERROR_LOADING_INTEGRATION_TYPE: "errorLoadingIntegrationType",
+  ERROR_UPGRADING_EPHEMERAL_TOKEN: "errorUpgradingEphemeralToken",
   INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });

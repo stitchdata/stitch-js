@@ -12,6 +12,7 @@ var EVENT_TYPES = Object.freeze({
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
   ERROR_LOADING_INTEGRATION_TYPE: "errorLoadingIntegrationType",
+  ERROR_UPGRADING_EPHEMERAL_TOKEN: "errorUpgradingEphemeralToken",
   INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
@@ -1269,7 +1270,7 @@ _export(_export.S + _export.F, 'Object', {
 
 var object = _core.Object;
 
-var HOST = "https://app.stitchdata.com";
+var HOST = "http://app.stitchdata.test:8080";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === true ? console.log : function () {};
 
@@ -2311,6 +2312,20 @@ var AppClosedPrematurelyError = function (_Error3) {
 
   return AppClosedPrematurelyError;
 }(Error);
+var UpgradeEphemeralTokenError = function (_Error4) {
+  inherits(UpgradeEphemeralTokenError, _Error4);
+
+  function UpgradeEphemeralTokenError() {
+    classCallCheck(this, UpgradeEphemeralTokenError);
+
+    var _this4 = possibleConstructorReturn(this, (UpgradeEphemeralTokenError.__proto__ || object.getPrototypeOf(UpgradeEphemeralTokenError)).call(this, "Error upgrading ephemeral token."));
+
+    _this4.constructor = UpgradeEphemeralTokenError;
+    return _this4;
+  }
+
+  return UpgradeEphemeralTokenError;
+}(Error);
 
 function upsertSourceIntegration(step, options) {
   var id = options.id,
@@ -2338,6 +2353,9 @@ function upsertSourceIntegration(step, options) {
         client.close();
       } else if (event.type === EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE && type && event.data.type === type) {
         reject(new UnknownSourceTypeError(type));
+        client.close();
+      } else if (event.type === EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN) {
+        reject(new UpgradeEphemeralTokenError());
         client.close();
       } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
         if (integration) {
@@ -2374,6 +2392,7 @@ exports.STEPS = STEPS;
 exports.SourceNotFoundError = SourceNotFoundError;
 exports.UnknownSourceTypeError = UnknownSourceTypeError;
 exports.AppClosedPrematurelyError = AppClosedPrematurelyError;
+exports.UpgradeEphemeralTokenError = UpgradeEphemeralTokenError;
 exports.addSource = addSource;
 exports.authorizeSource = authorizeSource;
 exports.displayDiscoveryOutputForSource = displayDiscoveryOutputForSource;

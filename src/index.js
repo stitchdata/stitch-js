@@ -102,6 +102,12 @@ export class AppClosedPrematurelyError extends Error {
     this.constructor = AppClosedPrematurelyError;
   }
 }
+export class UpgradeEphemeralTokenError extends Error {
+  constructor() {
+    super("Error upgrading ephemeral token.");
+    this.constructor = UpgradeEphemeralTokenError;
+  }
+}
 
 function upsertSourceIntegration(step, options) {
   let {
@@ -137,6 +143,9 @@ function upsertSourceIntegration(step, options) {
         event.data.type === type
       ) {
         reject(new UnknownSourceTypeError(type));
+        client.close();
+      } else if (event.type === EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN) {
+        reject(new UpgradeEphemeralTokenError());
         client.close();
       } else if (
         event.type === EVENT_TYPES.CLOSED ||

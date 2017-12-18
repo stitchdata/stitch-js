@@ -9,11 +9,12 @@ var EVENT_TYPES = Object.freeze({
   ERROR_AUTHORIZING_CONNCTION: "errorAuthorizingConnection",
   ERROR_LOADING_CONNECTION: "errorLoadingConnection",
   ERROR_LOADING_INTEGRATION_TYPE: "errorLoadingIntegrationType",
+  ERROR_UPGRADING_EPHEMERAL_TOKEN: "errorUpgradingEphemeralToken",
   INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
 
-const HOST = "https://app.stitchdata.com";
+const HOST = "http://app.stitchdata.test:8080";
 const ROOT = `${HOST}/v2/js-client`;
 const log =
   undefined === true ? console.log : function() {};
@@ -223,6 +224,12 @@ class AppClosedPrematurelyError extends Error {
     this.constructor = AppClosedPrematurelyError;
   }
 }
+class UpgradeEphemeralTokenError extends Error {
+  constructor() {
+    super("Error upgrading ephemeral token.");
+    this.constructor = UpgradeEphemeralTokenError;
+  }
+}
 
 function upsertSourceIntegration(step, options) {
   let {
@@ -258,6 +265,9 @@ function upsertSourceIntegration(step, options) {
         event.data.type === type
       ) {
         reject(new UnknownSourceTypeError(type));
+        client.close();
+      } else if (event.type === EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN) {
+        reject(new UpgradeEphemeralTokenError());
         client.close();
       } else if (
         event.type === EVENT_TYPES.CLOSED ||
@@ -296,4 +306,4 @@ function selectStreamsForSource(options) {
   return upsertSourceIntegration(STEPS.SELECT_STREAMS, options);
 }
 
-export { STEPS, SourceNotFoundError, UnknownSourceTypeError, AppClosedPrematurelyError, addSource, authorizeSource, displayDiscoveryOutputForSource, selectStreamsForSource };
+export { STEPS, SourceNotFoundError, UnknownSourceTypeError, AppClosedPrematurelyError, UpgradeEphemeralTokenError, addSource, authorizeSource, displayDiscoveryOutputForSource, selectStreamsForSource };

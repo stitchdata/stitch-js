@@ -180,6 +180,7 @@ If the user doesn't complete any of the steps successfully, the promise will be 
 * `AppClosedPrematurelyError`
 * `SourceNotFoundError`
 * `UnknownSourceTypeError`
+* `UpgradeEphemeralTokenError`
 
 ## Building
 

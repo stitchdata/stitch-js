@@ -14,7 +14,7 @@ var EVENT_TYPES = Object.freeze({
   INTEGRATION_FORM_CLOSE: "integrationFormClose"
 });
 
-const HOST = "http://app.stitchdata.test:8080";
+const HOST = "https://app.stitchdata.com";
 const ROOT = `${HOST}/v2/js-client`;
 const log =
   undefined === true ? console.log : function() {};

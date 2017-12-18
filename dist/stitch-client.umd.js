@@ -1270,7 +1270,7 @@ _export(_export.S + _export.F, 'Object', {
 
 var object = _core.Object;
 
-var HOST = "http://app.stitchdata.test:8080";
+var HOST = "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === true ? console.log : function () {};
 

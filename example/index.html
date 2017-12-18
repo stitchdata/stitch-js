@@ -3,10 +3,13 @@
   <head>
     <title>Stitch JS Client Example</title>
     <link rel="stylesheet" href="https://code.cdn.mozilla.net/fonts/fira.css">
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <style type="text/css">
       html {
         font-family: "Fira Sans", sans-serif;
-        font-size: 20px;
+        font-size: 18px;
       }
       body {
         align-items: center;
@@ -24,9 +27,9 @@
         border: none;
         color: #1e2023;
         cursor: pointer;
-        font-family: "Fira Sans", sans-serif;
-        font-size: 0.75em;
-        padding: 1em 2em;
+        font-family: inherit;
+        font-size: inherit;
+        padding: 0.5em 2em;
       }
       button:hover {
         background-color: #1e2023;
@@ -39,60 +42,51 @@
         cursor: default;
       }
       .status {
-        list-style-type: none;
-        padding: 0;
+        background-color: #e2e2e2;
+        box-sizing: border-box;
+        padding: 0.5em;
+      }
+      .status.status--in-progress {
+        background-color: #41c0ff;
+        color: #ffffff;
+      }
+      .status.status--success {
+        background-color: #66cc66;
+        color: #ffffff;
+      }
+      .status.status--failure {
+        background-color: #ed4040;
+        color: #ffffff;
+      }
+      .status .status__detail {
         margin: 0;
+        white-space: pre-wrap;
       }
-      .status .status__item {
-        opacity: 0.20;
-        -webkit-filter: grayscale(1);
-        filter: grayscale(1);
-        padding-left: 1em;
+
+      input,
+      select {
+        font-family: inherit;
+        font-size: inherit;
       }
-      .status .status__item-icon {
-        position: relative;
-        left: -0.5em;
+
+      label {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
       }
-      .status.status--failed .status__item--failed {
-        color: #ED4040;
+      .container > * + * {
+        margin-top: 1em;
       }
-      .status.status--success .status__item--success {
-        color: #66CC66;
+      .container.container--primary > * + * {
+        margin-top: 2em;
+        width: 500px;
       }
-      .status.status--not-started .status__item--not-started,
-      .status.status--in-progress .status__item--in-progress,
-      .status.status--failed .status__item--failed,
-      .status.status--success .status__item--success {
-        font-weight: 600;
-        filter: none;
-        opacity: 1;
-      }
+
     </style>
   </head>
   <body>
-
-    <ul class="status status--not-started">
-      <li class="status__item status__item--not-started">
-        <span class="status__item-icon">⏲️</span>
-        Not Started
-      </li>
-      <li class="status__item status__item--in-progress">
-        <span class="status__item-icon">🏁</span>
-        Stitch app open...
-      </li>
-      <li class="status__item status__item--failed">
-        <span class="status__item-icon">🚫</span>
-        Integration not created
-      </li>
-      <li class="status__item status__item--success">
-        <span class="status__item-icon">✅</span>
-        Integration created successfully <span id="integration-details"></span>
-      </li>
-    </ul>
-
-    <button id="submit">Create a Hubspot Integration</button>
-
-    <script src="../dist/stitch-client.js"></script>
-    <script src="example.js"></script>
+    <div id="root"></div>
+    <script src="../dist/stitch-client.umd.js"></script>
+    <script type="text/babel" data-presets="es2015,stage-2,react" src="example.js"></script>
   </body>
 </html>

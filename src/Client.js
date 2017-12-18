@@ -1,20 +1,20 @@
 import EVENT_TYPES from "./EVENT_TYPES.js";
+import Object from "core-js/library/fn/object";
 
-const HOST = process.env.STITCH_JS_HOST || "https://app.stitchdata.com"
+const HOST = process.env.STITCH_JS_HOST;
 const ROOT = `${HOST}/v2/js-client`;
-const log = process.env.STITCH_JS_VERBOSE_OUTPUT === "true" ? console.log : function(){};
+const log =
+  process.env.STITCH_JS_VERBOSE_OUTPUT === true ? console.log : function() {};
 
-const KNOWN_MESSAGE_TYPES = Object.keys(EVENT_TYPES)
-  .map((key) => EVENT_TYPES[key]);
+const KNOWN_MESSAGE_TYPES = Object.values(EVENT_TYPES);
 
 export default class StitchClient {
-
-  constructor(context={}) {
+  constructor(context = {}) {
     this._childWindow = null;
     this._initialized = false;
     this._context = context;
     this._subscribers = [];
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", event => {
       if (event.source === this._childWindow) {
         this._onMessage(event.data);
       }
@@ -23,7 +23,9 @@ export default class StitchClient {
 
   subscribe(callback) {
     const unlisten = () => {
-      this._subscribers = this._subscribers.filter((_callback) => callback !== callback)
+      this._subscribers = this._subscribers.filter(
+        _callback => callback !== callback
+      );
     };
     this._subscribers.push(callback);
     return unlisten;
@@ -51,10 +53,10 @@ export default class StitchClient {
   }
 
   _windowClosed() {
-    log("event: closed")
+    log("event: closed");
     this._childWindow = null;
     this._initialized = false;
-    this._emit({type: "closed"});
+    this._emit({ type: "closed" });
   }
 
   _onMessage(event) {
@@ -77,10 +79,13 @@ export default class StitchClient {
       return this.initialize();
     }
     log("send context", this._context);
-    this._childWindow.postMessage({
-      type: "update",
-      data: this._context
-    }, "*");
+    this._childWindow.postMessage(
+      {
+        type: "update",
+        data: this._context
+      },
+      "*"
+    );
   }
 
   setContext(context) {
@@ -88,7 +93,7 @@ export default class StitchClient {
     this._sendContext();
   }
 
-  initialize(context={}) {
+  initialize(context = {}) {
     log("initialize");
     this._context = context;
     if (this._childWindow) {

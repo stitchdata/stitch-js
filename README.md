@@ -1,79 +1,44 @@
-# Stitch JS Client [beta]
+# Stitch JS Client
 
 JavaScript client for integrating with `app.stitchdata.com`.
 
 Supported features:
 
-- The ability to pop-up a window to allow the user to create an integration of a particular type.
+* The ability to pop-up a window to:
+  * Allow the user to create an integration of a particular type
+  * Authorize an existing integration
+  * Run a connection check for an existing integration
+  * Select tables to replicate for an existing integration
 
 ## Installation
 
-Reference `dist/stitch-client.min.js` from a script tag:
+Reference `dist/stitch-client.umd.min.js` from a script tag:
 
 ```html
 <!-- local file -->
-<script src="stitch-client.min.js"></script>
+<script src="stitch-client.umd.min.js"></script>
 ```
 
 ## Example usage
 
-```javascript
-window.Stitch.addSourceIntegration("adroll", (result) => {
-  if (result) {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
-  } else {
-    console.log("Integration not created.");
-  }
-});
-```
-
-Or, if you're using ES6 modules:
+Here's an example of creating a new Adroll integration:
 
 ```javascript
+// Creating a new integration
+// If you're not using ES6 modules, you can remove this line (Stitch will be
+// available as window.Stitch):
 import * as Stitch from "stitch-client";
 
-Stitch.addSourceIntegration("adroll", (result) => {
-  if (result) {
+Stitch.addSource({ type: "adroll" })
+  .then(result => {
     console.log(`Integration created, type=${result.type}, id=${result.id}`);
-  } else {
-    console.log("Integration not created.");
-  }
-});
+  })
+  .catch(error => {
+    console.log("Integration not created.", error);
+  });
 ```
 
-The first argument to `addSourceIntegration` is a string that represents the source type.  The following types have been tested with Stitch.js:
-
- - `platform.hubspot`
- - `platform.marketo`
- - `salesforce`
- - `zendesk`
-
-The second argument is a function that will be called when the Stitch
-popup window closes.
-
-There is an optional third argument for additional state default selections.
-The following options are currently supported:
-
-1. `default_selections`: if provided, this property will be used to set default selections for the data
-structures to be replicated during the source integration setup. It should
-be an object of the form `{"table_name": true}`.
-
-1. `ephemeral_token`: if provided, this token will be used to automatically login the user.
-
-```javascript
-{"default_selections" : {"campaigns": true, "companies": true},
- "ephemeral_token": "some-ephemeral-token"}
-
-```
-
-Will pre-select the campaigns table for the `platform.hubspot`
-integration. If a table name is given that is not produced by the source
-integration, it is ignored. Values other than `true` are also ignored, and
-nesting of default selections is not currently supported - only top level
-tables can be provided.
-
-This repository also includes a complete (but very basic)
-example application in the `example/` directory.
+This repository also includes an example application in the `example/` directory.
 
 You can run `npm install` from the root directory of the repo to install `http-server`, and then start a server to run this
 
@@ -83,6 +48,140 @@ stitch-js-client$ http-server
 # The site should now be available at http://127.0.0.1:8080/example
 ```
 
+## API
+
+Stitch.js _officially_ supports the following integration types:
+
+* `platform.hubspot`
+* `platform.marketo`
+* `salesforce`
+* `zendesk`
+
+All of the public API functions expect an `options` object as the only argument, and return a `Promise`.
+
+**Note:** Stitch uses a step-based flow for creating integrations. The flow is:
+
+1. Create (show a form and prompt for any required properties like schema name)
+2. Authorize
+3. Run connection check
+4. Select fields
+
+When you send a user to a particular step, the user will also be prompted to complete any successive steps. If, for example, you direct the user to the connection check step (step 3), and the integration requires field selection, the user will also be prompted to select fields.
+
+### Options
+
+Each API function expects specific `options` properties, but a couple of optional properties are supported by all API functions:
+
+* `default_streams`: (optional) this property will be used to set default selections for the data structures to be replicated during the source integration setup. It should be an object of the form `{"table_name": true}`. **Note:** If a table name is given that is not produced by the source
+  integration, it is ignored. Values other than `true` are also ignored, and
+  nesting of default selections is not currently supported - only top level
+  tables can be provided.
+
+* `ephemeral_token`: (optional) this token can be used to automatically login the user.
+
+Here's an example of adding a Hubspot integration using an ephemeral token and default field selections to pre-select the campaigns and companies tables:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.addSource({
+  type: "platform.hubspot",
+  default_streams: { campaigns: true, companies: true },
+  ephemeral_token: "some-ephemeral-token"
+})
+  .then(result => {
+    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  })
+  .catch(error => {
+    console.log("Integration not created.", error);
+  });
+```
+
+### `addSource(options)`
+
+Options:
+
+* `type` (required)
+
+(See example usage above.)
+
+### `authorizeSource(options)`
+
+Options:
+
+* `id` (required)
+
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.addSource({
+  id: 123
+})
+  .then(result => {
+    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  })
+  .catch(error => {
+    console.log("Integration not created.", error);
+  });
+```
+
+### `displayDiscoveryOutputForSource(options)`
+
+Options:
+
+* `id` (required)
+* `discovery_job_name` (required)
+
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.displayDiscoveryOutputForSource({
+  id: 123,
+  discovery_job_name: "987-123-4567891234-checks"
+})
+  .then(result => {
+    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  })
+  .catch(error => {
+    console.log("Integration not created.", error);
+  });
+```
+
+### `selectStreamsForSource(options)`
+
+Options:
+
+* `id` (required)
+
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.selectStreamsForSource({
+  id: 123
+})
+  .then(result => {
+    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  })
+  .catch(error => {
+    console.log("Integration not created.", error);
+  });
+```
+
+### Errors
+
+If the user doesn't complete any of the steps successfully, the promise will be rejected with an instance of one of these error classes:
+
+* `AppClosedPrematurelyError`
+* `SourceNotFoundError`
+* `UnknownSourceTypeError`
+* `UpgradeEphemeralTokenError`
+
 ## Building
 
 Install dev dependencies by running (from the root of this repo):
@@ -91,11 +190,13 @@ Install dev dependencies by running (from the root of this repo):
 npm install
 ```
 
-To build `dist/stitch-client.js` and `dist/stitch-client.min.js`, run:
+To build `dist/` packages, run:
 
 ```
-npm run build && npm run minify
+npm run build
 ```
+
+You can also run `npm run watch` to start a process what builds packages whenever a source file changes.
 
 To use a host other than `https://app.stitchdata.com`, set the `STITCH_JS_HOST` variable in your environment before building:
 

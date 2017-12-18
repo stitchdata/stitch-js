@@ -1,5 +1,7 @@
 import Client from "./Client.js";
 import EVENT_TYPES from "./EVENT_TYPES.js";
+import Object from "core-js/library/fn/object";
+import Promise from "core-js/library/fn/promise";
 
 export const STEPS = {
   CREATE: "CREATE",
@@ -79,7 +81,7 @@ function getContext(baseContext, step, options) {
   if (getContextFn) {
     return getContextFn(baseContext, options);
   }
-  return context;
+  return baseContext;
 }
 
 export class SourceNotFoundError extends Error {
@@ -122,30 +124,36 @@ function upsertSourceIntegration(step, options) {
   return new Promise((resolve, reject) => {
     const client = new Client();
     let integration;
-    client.subscribe((event) => {
-
-      if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.id === id) {
+    client.subscribe(event => {
+      if (
+        event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION &&
+        event.data.id === id
+      ) {
         reject(new SourceNotFoundError(id));
         client.close();
-      } else if (event.type === EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE && type && event.data.type === type) {
+      } else if (
+        event.type === EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE &&
+        type &&
+        event.data.type === type
+      ) {
         reject(new UnknownSourceTypeError(type));
         client.close();
-      } else if (event.type === EVENT_TYPES.CLOSED) {
-        if (integration){
+      } else if (
+        event.type === EVENT_TYPES.CLOSED ||
+        event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE
+      ) {
+        if (integration) {
           resolve(integration);
         } else {
           reject(new AppClosedPrematurelyError());
         }
         client.close();
-      } else if (event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
-        resolve(integration);
-        client.close();
-      } else if (event.type === EVENT_TYPES.INTEGRATION_FLOW_COMPLETED &&
+      } else if (
+        event.type === EVENT_TYPES.INTEGRATION_FLOW_COMPLETED &&
         ((type && event.data.type === type) || (id && event.data.id === id))
       ) {
         integration = event.data;
       }
-
     });
     client.initialize(context);
   });

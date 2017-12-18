@@ -41,6 +41,7 @@ var _fails = function _fails(exec) {
   }
 };
 
+// Thank's IE8 for his funny defineProperty
 var _descriptors = !_fails(function () {
   return Object.defineProperty({}, 'a', { get: function get() {
       return 7;
@@ -58,6 +59,8 @@ var _aFunction = function _aFunction(it) {
   if (typeof it != 'function') throw TypeError(it + ' is not a function!');
   return it;
 };
+
+// optional / simple context binding
 
 var _ctx = function _ctx(fn, that, length) {
   _aFunction(fn);
@@ -198,6 +201,10 @@ var _ie8DomDefine = !_descriptors && !_fails(function () {
     } }).a != 7;
 });
 
+// 7.1.1 ToPrimitive(input [, PreferredType])
+
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
 var _toPrimitive = function _toPrimitive(it, S) {
   if (!_isObject(it)) return it;
   var fn, val;
@@ -418,6 +425,9 @@ var _cof = function _cof(it) {
   return toString.call(it).slice(8, -1);
 };
 
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+
+// eslint-disable-next-line no-prototype-builtins
 var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
   return _cof(it) == 'String' ? it.split('') : Object(it);
 };
@@ -427,6 +437,9 @@ var _defined = function _defined(it) {
   if (it == undefined) throw TypeError("Can't call method on  " + it);
   return it;
 };
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+
 
 var _toIobject = function _toIobject(it) {
   return _iobject(_defined(it));
@@ -439,6 +452,8 @@ var _toInteger = function _toInteger(it) {
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
 
+// 7.1.15 ToLength
+
 var min = Math.min;
 var _toLength = function _toLength(it) {
   return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -450,6 +465,10 @@ var _toAbsoluteIndex = function _toAbsoluteIndex(index, length) {
   index = _toInteger(index);
   return index < 0 ? max(index + length, 0) : min$1(index, length);
 };
+
+// false -> Array#indexOf
+// true  -> Array#includes
+
 
 var _arrayIncludes = function _arrayIncludes(IS_INCLUDES) {
   return function ($this, el, fromIndex) {
@@ -499,6 +518,9 @@ var _objectKeysInternal = function _objectKeysInternal(object, names) {
 // IE 8- don't enum bug keys
 var _enumBugKeys = 'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'.split(',');
 
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+
+
 var _objectKeys = Object.keys || function keys(O) {
   return _objectKeysInternal(O, _enumBugKeys);
 };
@@ -515,6 +537,9 @@ var _objectPie = {
 	f: f$3
 };
 
+// all enumerable object keys, includes symbols
+
+
 var _enumKeys = function _enumKeys(it) {
   var result = _objectKeys(it);
   var getSymbols = _objectGops.f;
@@ -528,6 +553,8 @@ var _enumKeys = function _enumKeys(it) {
     }
   }return result;
 };
+
+// 7.2.2 IsArray(argument)
 
 var _isArray = Array.isArray || function isArray(arg) {
   return _cof(arg) == 'Array';
@@ -546,6 +573,9 @@ var _objectDps = _descriptors ? Object.defineProperties : function definePropert
 
 var document$2 = _global.document;
 var _html = document$2 && document$2.documentElement;
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+
 
 var IE_PROTO$1 = _sharedKey('IE_PROTO');
 var Empty = function Empty() {/* empty */};
@@ -586,6 +616,8 @@ var _objectCreate = Object.create || function create(O, Properties) {
   return Properties === undefined ? result : _objectDps(result, Properties);
 };
 
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+
 var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
 
 var f$5 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
@@ -595,6 +627,8 @@ var f$5 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
 var _objectGopn = {
   f: f$5
 };
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 
 var gOPN$1 = _objectGopn.f;
 var toString$1 = {}.toString;
@@ -631,6 +665,9 @@ var f$6 = _descriptors ? gOPD$1 : function getOwnPropertyDescriptor(O, P) {
 var _objectGopd = {
   f: f$6
 };
+
+// ECMAScript 6 symbols shim
+
 
 var META = _meta.KEY;
 
@@ -849,11 +886,17 @@ _setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 _setToStringTag(_global.JSON, 'JSON', true);
 
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 _export(_export.S, 'Object', { create: _objectCreate });
 
+// 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 _export(_export.S + _export.F * !_descriptors, 'Object', { defineProperty: _objectDp.f });
 
+// 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
 _export(_export.S + _export.F * !_descriptors, 'Object', { defineProperties: _objectDps });
+
+// most Object methods by ES6 should accept primitives
+
 
 var _objectSap = function _objectSap(KEY, exec) {
   var fn = (_core.Object || {})[KEY] || Object[KEY];
@@ -864,6 +907,8 @@ var _objectSap = function _objectSap(KEY, exec) {
   }), 'Object', exp);
 };
 
+// 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+
 var $getOwnPropertyDescriptor$1 = _objectGopd.f;
 
 _objectSap('getOwnPropertyDescriptor', function () {
@@ -872,9 +917,14 @@ _objectSap('getOwnPropertyDescriptor', function () {
   };
 });
 
+// 7.1.13 ToObject(argument)
+
 var _toObject = function _toObject(it) {
   return Object(_defined(it));
 };
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+
 
 var IE_PROTO$2 = _sharedKey('IE_PROTO');
 var ObjectProto$1 = Object.prototype;
@@ -887,11 +937,17 @@ var _objectGpo = Object.getPrototypeOf || function (O) {
   }return O instanceof Object ? ObjectProto$1 : null;
 };
 
+// 19.1.2.9 Object.getPrototypeOf(O)
+
+
 _objectSap('getPrototypeOf', function () {
   return function getPrototypeOf$$1(it) {
     return _objectGpo(_toObject(it));
   };
 });
+
+// 19.1.2.14 Object.keys(O)
+
 
 _objectSap('keys', function () {
   return function keys(it) {
@@ -899,9 +955,12 @@ _objectSap('keys', function () {
   };
 });
 
+// 19.1.2.7 Object.getOwnPropertyNames(O)
 _objectSap('getOwnPropertyNames', function () {
   return _objectGopnExt.f;
 });
+
+// 19.1.2.5 Object.freeze(O)
 
 var meta = _meta.onFreeze;
 
@@ -911,6 +970,8 @@ _objectSap('freeze', function ($freeze) {
   };
 });
 
+// 19.1.2.17 Object.seal(O)
+
 var meta$1 = _meta.onFreeze;
 
 _objectSap('seal', function ($seal) {
@@ -918,6 +979,8 @@ _objectSap('seal', function ($seal) {
     return $seal && _isObject(it) ? $seal(meta$1(it)) : it;
   };
 });
+
+// 19.1.2.15 Object.preventExtensions(O)
 
 var meta$2 = _meta.onFreeze;
 
@@ -927,11 +990,17 @@ _objectSap('preventExtensions', function ($preventExtensions) {
   };
 });
 
+// 19.1.2.12 Object.isFrozen(O)
+
+
 _objectSap('isFrozen', function ($isFrozen) {
   return function isFrozen(it) {
     return _isObject(it) ? $isFrozen ? $isFrozen(it) : false : true;
   };
 });
+
+// 19.1.2.13 Object.isSealed(O)
+
 
 _objectSap('isSealed', function ($isSealed) {
   return function isSealed(it) {
@@ -939,11 +1008,17 @@ _objectSap('isSealed', function ($isSealed) {
   };
 });
 
+// 19.1.2.11 Object.isExtensible(O)
+
+
 _objectSap('isExtensible', function ($isExtensible) {
   return function isExtensible(it) {
     return _isObject(it) ? $isExtensible ? $isExtensible(it) : true : false;
   };
 });
+
+// 19.1.2.1 Object.assign(target, source, ...)
+
 
 var $assign = Object.assign;
 
@@ -978,6 +1053,9 @@ var _objectAssign = !$assign || _fails(function () {
   }return T;
 } : $assign;
 
+// 19.1.3.1 Object.assign(target, source)
+
+
 _export(_export.S + _export.F, 'Object', { assign: _objectAssign });
 
 // 7.2.9 SameValue(x, y)
@@ -986,7 +1064,12 @@ var _sameValue = Object.is || function is(x, y) {
   return x === y ? x !== 0 || 1 / x === 1 / y : x != x && y != y;
 };
 
+// 19.1.3.10 Object.is(value1, value2)
+
 _export(_export.S, 'Object', { is: _sameValue });
+
+// Works with __proto__ only. Old v8 can't work with null proto objects.
+/* eslint-disable no-proto */
 
 var check = function check(O, proto) {
   _anObject(O);
@@ -1011,7 +1094,12 @@ var _setProto = {
   check: check
 };
 
+// 19.1.3.19 Object.setPrototypeOf(O, proto)
+
 _export(_export.S, 'Object', { setPrototypeOf: _setProto.set });
+
+// all object keys, includes non-enumerable and symbols
+
 
 var Reflect = _global.Reflect;
 var _ownKeys = Reflect && Reflect.ownKeys || function ownKeys(it) {
@@ -1023,6 +1111,9 @@ var _ownKeys = Reflect && Reflect.ownKeys || function ownKeys(it) {
 var _createProperty = function _createProperty(object, index, value) {
   if (index in object) _objectDp.f(object, index, _propertyDesc(0, value));else object[index] = value;
 };
+
+// https://github.com/tc39/proposal-object-getownpropertydescriptors
+
 
 _export(_export.S, 'Object', {
   getOwnPropertyDescriptors: function getOwnPropertyDescriptors(object) {
@@ -1057,6 +1148,8 @@ var _objectToArray = function _objectToArray(isEntries) {
   };
 };
 
+// https://github.com/tc39/proposal-object-values-entries
+
 var $values = _objectToArray(false);
 
 _export(_export.S, 'Object', {
@@ -1064,6 +1157,8 @@ _export(_export.S, 'Object', {
     return $values(it);
   }
 });
+
+// https://github.com/tc39/proposal-object-values-entries
 
 var $entries = _objectToArray(true);
 
@@ -1073,6 +1168,7 @@ _export(_export.S, 'Object', {
   }
 });
 
+// Forced replacement prototype accessors methods
 var _objectForcedPam = _library || !_fails(function () {
   var K = Math.random();
   // In FF throws only define methods
@@ -1081,12 +1177,14 @@ var _objectForcedPam = _library || !_fails(function () {
   delete _global[K];
 });
 
+// B.2.2.2 Object.prototype.__defineGetter__(P, getter)
 _descriptors && _export(_export.P + _objectForcedPam, 'Object', {
   __defineGetter__: function __defineGetter__(P, getter) {
     _objectDp.f(_toObject(this), P, { get: _aFunction(getter), enumerable: true, configurable: true });
   }
 });
 
+// B.2.2.3 Object.prototype.__defineSetter__(P, setter)
 _descriptors && _export(_export.P + _objectForcedPam, 'Object', {
   __defineSetter__: function __defineSetter__(P, setter) {
     _objectDp.f(_toObject(this), P, { set: _aFunction(setter), enumerable: true, configurable: true });
@@ -1122,6 +1220,8 @@ _descriptors && _export(_export.P + _objectForcedPam, 'Object', {
 });
 
 _export(_export.S + _export.F, 'Object', { isObject: _isObject });
+
+// getting tag from 19.1.3.6 Object.prototype.toString()
 
 var TAG$1 = _wks('toStringTag');
 // ES3 wrong here
@@ -1169,7 +1269,7 @@ _export(_export.S + _export.F, 'Object', {
 
 var object = _core.Object;
 
-var HOST = "http://app.stitchdata.test:8080" || "https://app.stitchdata.com";
+var HOST = "undefined" || "https://app.stitchdata.com";
 var ROOT = HOST + "/v2/js-client";
 var log = undefined === true ? console.log : function () {};
 
@@ -1322,6 +1422,8 @@ var StitchClient = function () {
   return StitchClient;
 }();
 
+// true  -> String#at
+// false -> String#codePointAt
 var _stringAt = function _stringAt(TO_STRING) {
   return function (that, pos) {
     var s = String(_defined(that));
@@ -1442,6 +1544,10 @@ var _iterStep = function _iterStep(done, value) {
   return { value: value, done: !!done };
 };
 
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
 var es6_array_iterator = _iterDefine(Array, 'Array', function (iterated, kind) {
   this._t = _toIobject(iterated); // target
   this._i = 0; // next index
@@ -1481,6 +1587,8 @@ var _anInstance = function _anInstance(it, Constructor, name, forbiddenField) {
   }return it;
 };
 
+// call something on iterator step with safe closing on error
+
 var _iterCall = function _iterCall(iterator, fn, value, entries) {
   try {
     return entries ? fn(_anObject(value)[0], value[1]) : fn(value);
@@ -1491,6 +1599,8 @@ var _iterCall = function _iterCall(iterator, fn, value, entries) {
     throw e;
   }
 };
+
+// check on default Array iterator
 
 var ITERATOR$1 = _wks('iterator');
 var ArrayProto = Array.prototype;
@@ -1528,6 +1638,9 @@ var _forOf = createCommonjsModule(function (module) {
   exports.BREAK = BREAK;
   exports.RETURN = RETURN;
 });
+
+// 7.3.20 SpeciesConstructor(O, defaultConstructor)
+
 
 var SPECIES = _wks('species');
 var _speciesConstructor = function _speciesConstructor(O, D) {
@@ -1702,6 +1815,9 @@ var _microtask = function _microtask() {
     }last = task;
   };
 };
+
+// 25.4.1.5 NewPromiseCapability(C)
+
 
 function PromiseCapability(C) {
   var resolve, reject;
@@ -2062,6 +2178,9 @@ _export(_export.P + _export.R, 'Promise', { 'finally': function _finally(onFinal
       });
     } : onFinally);
   } });
+
+// https://github.com/tc39/proposal-promise-try
+
 
 _export(_export.S, 'Promise', { 'try': function _try(callbackfn) {
     var promiseCapability = _newPromiseCapability.f(this);

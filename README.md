@@ -1,4 +1,4 @@
-# Stitch JS Client [beta]
+# Stitch JS Client
 
 JavaScript client for integrating with `app.stitchdata.com`.
 

@@ -120,10 +120,10 @@ Stitch.addSource({
   id: 123
 })
   .then(result => {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+    console.log(`Integration authorized, type=${result.type}, id=${result.id}`);
   })
   .catch(error => {
-    console.log("Integration not created.", error);
+    console.log("Authorization failed.", error);
   });
 ```
 
@@ -143,11 +143,11 @@ Stitch.displayDiscoveryOutputForSource({
   id: 123,
   discovery_job_name: "987-123-4567891234-checks"
 })
-  .then(result => {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+  .then(() => {
+    console.log(`Discovery succeeded.`);
   })
   .catch(error => {
-    console.log("Integration not created.", error);
+    console.log("Discovery failed.", error);
   });
 ```
 
@@ -166,10 +166,10 @@ Stitch.selectStreamsForSource({
   id: 123
 })
   .then(result => {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+    console.log(`Streams selected, type=${result.type}, id=${result.id}`);
   })
   .catch(error => {
-    console.log("Integration not created.", error);
+    console.log("Streams not selected.", error);
   });
 ```
 

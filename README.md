@@ -5,10 +5,10 @@ JavaScript client for integrating with `app.stitchdata.com`.
 Supported features:
 
 * The ability to pop-up a window to:
-  * Allow the user to create an integration of a particular type
-  * Authorize an existing integration
-  * Run a connection check for an existing integration
-  * Select tables to replicate for an existing integration
+  * Allow the user to create a source of a particular type
+  * Authorize an existing source
+  * Run a connection check for an existing source
+  * Select streams to replicate for an existing source
 
 ## Installation
 
@@ -21,20 +21,19 @@ Reference `dist/stitch-client.umd.min.js` from a script tag:
 
 ## Example usage
 
-Here's an example of creating a new Adroll integration:
+Here's an example of creating a new Adroll source:
 
 ```javascript
-// Creating a new integration
 // If you're not using ES6 modules, you can remove this line (Stitch will be
 // available as window.Stitch):
 import * as Stitch from "stitch-client";
 
 Stitch.addSource({ type: "adroll" })
   .then(result => {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+    console.log(`Source created, type=${result.type}, id=${result.id}`);
   })
   .catch(error => {
-    console.log("Integration not created.", error);
+    console.log("Source not created.", error);
   });
 ```
 
@@ -50,7 +49,7 @@ stitch-js-client$ http-server
 
 ## API
 
-Stitch.js _officially_ supports the following integration types:
+Stitch.js officially supports the following source types:
 
 * `platform.hubspot`
 * `platform.marketo`
@@ -59,27 +58,24 @@ Stitch.js _officially_ supports the following integration types:
 
 All of the public API functions expect an `options` object as the only argument, and return a `Promise`.
 
-**Note:** Stitch uses a step-based flow for creating integrations. The flow is:
+**Note:** Stitch uses a step-based flow for creating sources. The flow is:
 
 1. Create (show a form and prompt for any required properties like schema name)
 2. Authorize
 3. Run connection check
-4. Select fields
+4. Select streams
 
-When you send a user to a particular step, the user will also be prompted to complete any successive steps. If, for example, you direct the user to the connection check step (step 3), and the integration requires field selection, the user will also be prompted to select fields.
+When you send a user to a particular step, the user will also be prompted to complete any successive steps. If, for example, you direct the user to the connection check step (step 3), and the source requires stream selection, the user will also be prompted to select streams.
 
 ### Options
 
 Each API function expects specific `options` properties, but a couple of optional properties are supported by all API functions:
 
-* `default_streams`: (optional) this property will be used to set default selections for the data structures to be replicated during the source integration setup. It should be an object of the form `{"table_name": true}`. **Note:** If a table name is given that is not produced by the source
-  integration, it is ignored. Values other than `true` are also ignored, and
-  nesting of default selections is not currently supported - only top level
-  tables can be provided.
+* `default_streams`: (optional) this property will be used to set default selections for the data structures to be replicated during the select streams setup. It should be an object of the form `{"table_name": true}`. **Note:** If a table name is given that is not produced by the source, it is ignored. Values other than `true` are also ignored, and nesting of default selections is not currently supported - only top level tables can be provided.
 
 * `ephemeral_token`: (optional) this token can be used to automatically login the user.
 
-Here's an example of adding a Hubspot integration using an ephemeral token and default field selections to pre-select the campaigns and companies tables:
+Here's an example of adding a Hubspot source using an ephemeral token and default stream selections to pre-select the campaigns and companies tables:
 
 ```javascript
 import * as Stitch from "stitch-client";
@@ -90,10 +86,10 @@ Stitch.addSource({
   ephemeral_token: "some-ephemeral-token"
 })
   .then(result => {
-    console.log(`Integration created, type=${result.type}, id=${result.id}`);
+    console.log(`Source created, type=${result.type}, id=${result.id}`);
   })
   .catch(error => {
-    console.log("Integration not created.", error);
+    console.log("Source not created.", error);
   });
 ```
 
@@ -104,6 +100,28 @@ Options:
 * `type` (required)
 
 (See example usage above.)
+
+### `editSource(options)`
+
+Options:
+
+* `id` (required)
+
+Example usage:
+
+```javascript
+import * as Stitch from "stitch-client";
+
+Stitch.addSource({
+  id: 123
+})
+  .then(result => {
+    console.log(`Source updated, type=${result.type}, id=${result.id}`);
+  })
+  .catch(error => {
+    console.log("Editing source failed.", error);
+  });
+```
 
 ### `authorizeSource(options)`
 
@@ -120,7 +138,7 @@ Stitch.addSource({
   id: 123
 })
   .then(result => {
-    console.log(`Integration authorized, type=${result.type}, id=${result.id}`);
+    console.log(`Source authorized, type=${result.type}, id=${result.id}`);
   })
   .catch(error => {
     console.log("Authorization failed.", error);

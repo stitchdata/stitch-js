@@ -1,6 +1,6 @@
 {
   "name": "stitch-js-client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/stitch-client.js",
   "browser": "dist/stitch-client.umd.js",
@@ -31,7 +31,5 @@
   "dependencies": {
     "core-js": "^2.5.3"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

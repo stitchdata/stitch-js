@@ -112,7 +112,7 @@ Example usage:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.addSource({
+Stitch.editSource({
   id: 123
 })
   .then(result => {
@@ -134,7 +134,7 @@ Example usage:
 ```javascript
 import * as Stitch from "stitch-client";
 
-Stitch.addSource({
+Stitch.authorizeSource({
   id: 123
 })
   .then(result => {

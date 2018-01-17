@@ -118,9 +118,7 @@ var StitchClient = function () {
         log("event: initialized");
         this._initialized = true;
         this._sendContext();
-      } else if (event.type === "closed") {
-        this._windowClosed();
-      } else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
+      } else if (event.type === "closed") {} else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
         log("event", event);
         this._emit(event);
       } else {

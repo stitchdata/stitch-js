@@ -8,5 +8,6 @@ export default Object.freeze({
   ERROR_LOADING_INTEGRATION_TYPE: "errorLoadingIntegrationType",
   ERROR_UPGRADING_EPHEMERAL_TOKEN: "errorUpgradingEphemeralToken",
   INTEGRATION_FLOW_COMPLETED: "integrationFlowCompleted",
-  INTEGRATION_FORM_CLOSE: "integrationFormClose"
+  INTEGRATION_FORM_CLOSE: "integrationFormClose",
+  AUTHORIZE_SUCCESS: "authorizeSuccess"
 });

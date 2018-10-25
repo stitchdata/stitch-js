@@ -60,16 +60,16 @@ export default class StitchClient {
   }
 
   _onMessage(event) {
+    log("event", event);
     if (event.type === EVENT_TYPES.BOOTSTRAP) {
-      log("event: initialized");
       this._initialized = true;
       this._sendContext();
+      log("initialized");
     } else if (event.type === EVENT_TYPES.CLOSED) {
     } else if (KNOWN_MESSAGE_TYPES.indexOf(event.type) >= 0) {
-      log("event", event);
       this._emit(event);
     } else {
-      log("event: [WARNING] unknown message type", event);
+      log("[WARNING] unknown message type", event);
     }
   }
 

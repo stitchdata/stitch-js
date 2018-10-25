@@ -20,6 +20,12 @@ const SCENARIOS = [
     fields: new Set([...COMMON_FIELDS, "id"])
   },
   {
+    name: "authorize only",
+    title: "Authorize source only",
+    invoke: Stitch.onlyAuthorizeSource,
+    fields: new Set([...COMMON_FIELDS, "id"])
+  },
+  {
     name: "discover",
     title: "Display source discovery output",
     invoke: Stitch.displayDiscoveryOutputForSource,

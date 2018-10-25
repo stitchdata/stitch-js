@@ -12,7 +12,7 @@ Supported features:
 
 ## Installation
 
-Reference `dist/stitch-client.umd.min.js` from a script tag:
+Run `npm run build` to build the stitch-js app then reference `dist/stitch-client.umd.min.js` from a script tag:
 
 ```html
 <!-- local file -->

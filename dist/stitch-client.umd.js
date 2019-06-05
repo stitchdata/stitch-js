@@ -51,7 +51,7 @@
   });
 
   var _core = createCommonjsModule(function (module) {
-    var core = module.exports = { version: '2.5.7' };
+    var core = module.exports = { version: '2.6.9' };
     if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
   });
   var _core_1 = _core.version;
@@ -363,7 +363,7 @@
     })('versions', []).push({
       version: _core.version,
       mode: 'pure',
-      copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+      copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
     });
   });
 
@@ -541,6 +541,12 @@
     return _cof(arg) == 'Array';
   };
 
+  // 7.1.13 ToObject(argument)
+
+  var _toObject = function _toObject(it) {
+    return Object(_defined(it));
+  };
+
   var _objectDps = _descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
     _anObject(O);
     var keys = _objectKeys(Properties);
@@ -666,7 +672,7 @@
   var AllSymbols = _shared('symbols');
   var OPSymbols = _shared('op-symbols');
   var ObjectProto = Object[PROTOTYPE$2];
-  var USE_NATIVE = typeof $Symbol == 'function';
+  var USE_NATIVE = typeof $Symbol == 'function' && !!_objectGops.f;
   var QObject = _global.QObject;
   // Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
   var setter = !QObject || !QObject[PROTOTYPE$2] || !QObject[PROTOTYPE$2].findChild;
@@ -833,6 +839,18 @@
     getOwnPropertySymbols: $getOwnPropertySymbols
   });
 
+  // Chrome 38 and 39 `Object.getOwnPropertySymbols` fails on primitives
+  // https://bugs.chromium.org/p/v8/issues/detail?id=3443
+  var FAILS_ON_PRIMITIVES = _fails(function () {
+    _objectGops.f(1);
+  });
+
+  _export(_export.S + _export.F * FAILS_ON_PRIMITIVES, 'Object', {
+    getOwnPropertySymbols: function getOwnPropertySymbols(it) {
+      return _objectGops.f(_toObject(it));
+    }
+  });
+
   // 24.3.2 JSON.stringify(value [, replacer [, space]])
   $JSON && _export(_export.S + _export.F * (!USE_NATIVE || _fails(function () {
     var S = $Symbol();
@@ -897,12 +915,6 @@
       return $getOwnPropertyDescriptor$1(_toIobject(it), key);
     };
   });
-
-  // 7.1.13 ToObject(argument)
-
-  var _toObject = function _toObject(it) {
-    return Object(_defined(it));
-  };
 
   // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 
@@ -1029,7 +1041,8 @@
       var j = 0;
       var key;
       while (length > j) {
-        if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
+        key = keys[j++];
+        if (!_descriptors || isEnum.call(S, key)) T[key] = S[key];
       }
     }return T;
   } : $assign;
@@ -1122,10 +1135,12 @@
       var result = [];
       var key;
       while (length > i) {
-        if (isEnum$1.call(O, key = keys[i++])) {
+        key = keys[i++];
+        if (!_descriptors || isEnum$1.call(O, key)) {
           result.push(isEntries ? [key, O[key]] : O[key]);
         }
-      }return result;
+      }
+      return result;
     };
   };
 
@@ -2356,33 +2371,95 @@
 
     return new promise(function (resolve, reject) {
       var client = new StitchClient();
+
+      // IN PROGRESS means we're continuing to the next step
+      // SUCCESS means we've completed what we need to and can resolve with the id of the connection
+      // FAILURE means we've failed and need to reject with an error
+      var status = "IN_PROGRESS";
       var integration = void 0;
+      var error = void 0;
+
       client.subscribe(function (event) {
-        if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION && event.data.id === id) {
-          reject(new SourceNotFoundError(id));
-          client.close();
-        } else if (event.type === EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE && type && event.data.type === type) {
-          reject(new UnknownSourceTypeError(type));
-          client.close();
-        } else if (event.type === EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN) {
-          reject(new UpgradeEphemeralTokenError());
-          client.close();
-        } else if (event.type === EVENT_TYPES.CLOSED || event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
-          if (integration) {
-            resolve(integration);
-          } else {
-            reject(new AppClosedPrematurelyError());
-          }
-          client.close();
-        } else if (event.type === EVENT_TYPES.INTEGRATION_FLOW_COMPLETED && (type && event.data.type === type || id && event.data.id === id)) {
-          integration = event.data;
-        } else if (event.type == EVENT_TYPES.AUTHORIZE_SUCCESS && step == STEPS.ONLY_AUTHORIZE) {
-          client.close();
-        } else if (event.type == EVENT_TYPES.AUTHORIZE_FAILURE && step == STEPS.ONLY_AUTHORIZE) {
-          reject(new AuthorizeFailureError());
-          client.close();
+        switch (event.type) {
+
+          // This event kicks off whenever the tab is closed. Since we
+          // close the tab on terminal states, this happens both through
+          // normal interactions and user-generated interruptions
+          // and. This is the final event that kicks off after being
+          // done, as such, all resolution of the promise happens here
+          // based on the status value.
+          case EVENT_TYPES.CLOSED:
+            if (status === "FAILED") {
+              reject(error);
+            } else if (status === "SUCCESS") {
+              resolve(integration);
+            } else {
+              reject(new AppClosedPrematurelyError());
+            }
+            break;
+
+          // All errors are terminal states. These should set the
+          // exception to be returned in the promise and status should be
+          // set to FAILED. Finally, the client.close() method should be
+          // called. This triggers the CLOSED event and the promise is
+          // rejected.
+          case EVENT_TYPES.INTEGRATION_FORM_CLOSE:
+            status = "FAILED";
+            error = new AppClosedPrematurelyError();
+            client.close();
+            break;
+
+          case EVENT_TYPES.ERROR_LOADING_CONNECTION:
+            status = "FAILED";
+            error = new SourceNotFoundError(event.data.id);
+            client.close();
+            break;
+
+          case EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE:
+            status = "FAILED";
+            error = new UnknownSourceTypeError(type);
+            client.close();
+            break;
+
+          case EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN:
+            status = "FAILED";
+            error = new UpgradeEphemeralTokenError();
+            client.close();
+            break;
+
+          case EVENT_TYPES.AUTHORIZE_FAILURE:
+            status = "FAILED";
+            error = new AuthorizeFailureError();
+            client.close();
+            break;
+
+          // There are two SUCCESS terminal states. When doing an
+          // AUTH_ONLY flow, the AUTH_SUCCESS is terminal. For the other
+          // flows, the FLOW_COMPLETED event signifies the terminal
+          // state. Set the integration value to the event.data sent back
+          // and call client.close() to resolve the promise with the
+          // CLOSED event.
+          case EVENT_TYPES.AUTHORIZE_SUCCESS:
+            if (step === STEPS.ONLY_AUTHORIZE) {
+              status = "SUCCESS";
+              integration = event.data;
+              client.close();
+            }
+            break;
+
+          case EVENT_TYPES.INTEGRATION_FLOW_COMPLETED:
+            status = "SUCCESS";
+            integration = event.data;
+            client.close();
+            break;
+
+          // Unhandled event types are not important, but we do send back
+          // more events than this client cares about.
+          default:
+            break;
         }
       });
+
       client.initialize(context);
     });
   }

@@ -269,40 +269,95 @@ function upsertSourceIntegration(step, options) {
 
   return new Promise((resolve, reject) => {
     const client = new StitchClient();
+
+    // IN PROGRESS means we're continuing to the next step
+    // SUCCESS means we've completed what we need to and can resolve with the id of the connection
+    // FAILURE means we've failed and need to reject with an error
+    let status = "IN_PROGRESS";
     let integration;
+    let error;
+
     client.subscribe(event => {
-      if (event.type === EVENT_TYPES.ERROR_LOADING_CONNECTION &&
-          event.data.id === id) {
-        reject(new SourceNotFoundError(id));
-        client.close();
-      } else if (event.type === EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE &&
-                 type &&
-                 event.data.type === type) {
-        reject(new UnknownSourceTypeError(type));
-        client.close();
-      } else if (event.type === EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN) {
-        reject(new UpgradeEphemeralTokenError());
-        client.close();
-      } else if (event.type === EVENT_TYPES.CLOSED ||
-                 event.type === EVENT_TYPES.INTEGRATION_FORM_CLOSE) {
-        if (integration) {
+      switch(event.type) {
+
+      // This event kicks off whenever the tab is closed. Since we
+      // close the tab on terminal states, this happens both through
+      // normal interactions and user-generated interruptions
+      // and. This is the final event that kicks off after being
+      // done, as such, all resolution of the promise happens here
+      // based on the status value.
+      case EVENT_TYPES.CLOSED:
+        if (status === "FAILED") {
+          reject(error);
+        } else if (status === "SUCCESS") {
           resolve(integration);
         } else {
           reject(new AppClosedPrematurelyError());
         }
+        break;
+
+      // All errors are terminal states. These should set the
+      // exception to be returned in the promise and status should be
+      // set to FAILED. Finally, the client.close() method should be
+      // called. This triggers the CLOSED event and the promise is
+      // rejected.
+      case EVENT_TYPES.INTEGRATION_FORM_CLOSE:
+        status = "FAILED";
+        error = new AppClosedPrematurelyError();
         client.close();
-      } else if (event.type === EVENT_TYPES.INTEGRATION_FLOW_COMPLETED &&
-                 ((type && event.data.type === type) || (id && event.data.id === id))) {
+        break;
+
+      case EVENT_TYPES.ERROR_LOADING_CONNECTION:
+        status = "FAILED";
+        error = new SourceNotFoundError(event.data.id);
+        client.close();
+        break;
+
+      case EVENT_TYPES.ERROR_LOADING_INTEGRATION_TYPE:
+        status = "FAILED";
+        error = new UnknownSourceTypeError(type);
+        client.close();
+        break;
+
+      case EVENT_TYPES.ERROR_UPGRADING_EPHEMERAL_TOKEN:
+        status = "FAILED";
+        error = new UpgradeEphemeralTokenError();
+        client.close();
+        break;
+
+      case EVENT_TYPES.AUTHORIZE_FAILURE:
+        status = "FAILED";
+        error = new AuthorizeFailureError();
+        client.close();
+        break;
+
+      // There are two SUCCESS terminal states. When doing an
+      // AUTH_ONLY flow, the AUTH_SUCCESS is terminal. For the other
+      // flows, the FLOW_COMPLETED event signifies the terminal
+      // state. Set the integration value to the event.data sent back
+      // and call client.close() to resolve the promise with the
+      // CLOSED event.
+      case EVENT_TYPES.AUTHORIZE_SUCCESS:
+        if (step === STEPS.ONLY_AUTHORIZE) {
+          status = "SUCCESS";
+          integration = event.data;
+          client.close();
+        }
+        break;
+
+      case EVENT_TYPES.INTEGRATION_FLOW_COMPLETED:
+        status = "SUCCESS";
         integration = event.data;
-      } else if (event.type == EVENT_TYPES.AUTHORIZE_SUCCESS &&
-                 step == STEPS.ONLY_AUTHORIZE) {
         client.close();
-      } else if (event.type == EVENT_TYPES.AUTHORIZE_FAILURE &&
-                 step == STEPS.ONLY_AUTHORIZE) {
-        reject(new AuthorizeFailureError());
-        client.close();
+        break;
+
+      // Unhandled event types are not important, but we do send back
+      // more events than this client cares about.
+      default:
+        break;
       }
     });
+
     client.initialize(context);
   });
 }
